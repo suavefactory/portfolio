@@ -373,6 +373,49 @@
       font-variant-numeric: tabular-nums;
       letter-spacing: 0.03em;
     }
+
+    /* ── Mobile ── */
+    @media (hover: none), (max-width: 700px) {
+      * { cursor: auto !important; }
+      #cursor { display: none; }
+      #name-3d-wrap { display: none; }
+      body::after { display: none; }
+      body { font-size: 13px; }
+
+      header { grid-template-columns: 1fr 1fr; }
+      .header-name { display: none; }
+
+      .image-strip { grid-template-columns: repeat(3, 1fr); }
+      .image-cell:nth-child(n+4) { display: none; }
+
+      .col-headers {
+        grid-template-columns: 24px 1fr 28px 44px;
+      }
+      .col-headers span:nth-child(3),
+      .col-headers span:nth-child(4) { display: none; }
+
+      .project-row {
+        grid-template-columns: 24px 1fr 28px 44px;
+        padding: 10px 8px;
+        min-height: 44px;
+        align-items: center;
+        touch-action: manipulation;
+      }
+      .col-title, .col-disc { display: none; }
+
+      .float-window {
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        border-radius: 0;
+        transform: none !important;
+        resize: none;
+      }
+
+      .float-dot { width: 14px; height: 14px; }
+      footer { font-size: 11px; }
+    }
   </style>
 </head>
 <body>
@@ -440,8 +483,11 @@
   </footer>
 
   <script>
+    // ── Mobile detection ──────────────────────────────────────────────
+    const isMobile = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
+
     // ── 3D Name Extrude ──────────────────────────────────────────────
-    (function() {
+    if (!isMobile) (function() {
       const el = document.getElementById('name-3d');
       const LAYERS = 20, STEP = 1;
       for (let i = 0; i < LAYERS; i++) {
@@ -653,6 +699,7 @@
     let drag = false, dragX = 0, dragY = 0;
 
     floatTitlebar.addEventListener("mousedown", e => {
+      if (isMobile) return;
       drag = true;
       floatWindow.classList.add("dragging");
       const rect = floatWindow.getBoundingClientRect();
@@ -707,18 +754,20 @@
     totalEl.textContent = String(projects.length).padStart(2, "0");
 
     // ── Custom cursor (RAF-throttled) ─────────────────────────────────
-    let cx = 0, cy = 0, cursorPending = false;
-    document.addEventListener("mousemove", e => {
-      cx = e.clientX; cy = e.clientY;
-      if (!cursorPending) {
-        cursorPending = true;
-        requestAnimationFrame(() => {
-          cursor.style.left = cx + "px";
-          cursor.style.top  = cy + "px";
-          cursorPending = false;
-        });
-      }
-    });
+    if (!isMobile) {
+      let cx = 0, cy = 0, cursorPending = false;
+      document.addEventListener("mousemove", e => {
+        cx = e.clientX; cy = e.clientY;
+        if (!cursorPending) {
+          cursorPending = true;
+          requestAnimationFrame(() => {
+            cursor.style.left = cx + "px";
+            cursor.style.top  = cy + "px";
+            cursorPending = false;
+          });
+        }
+      });
+    }
 
     // ── Clock ─────────────────────────────────────────────────────────
     function tick() {
@@ -739,12 +788,6 @@
       return path.split('/').map(encodeURIComponent).join('/');
     }
 
-    // ── Preload all images ────────────────────────────────────────────
-    projects.forEach(p => {
-      (p.media || []).forEach(src => {
-        if (!VIDEO_EXT.test(src)) { const img = new Image(); img.src = encodePath(src); }
-      });
-    });
     let cycleInterval = null;
 
     const FRAME_MS = (3 / 24) * 1000; // 3 frames at 24fps in milliseconds
