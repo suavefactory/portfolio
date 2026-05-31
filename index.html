@@ -928,10 +928,12 @@
 
     const isMob = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
     if (!isMob) {
-      const W = 320, H = 190, dpr = Math.min(devicePixelRatio, 2);
+      const W = 440, H = 240, dpr = Math.min(devicePixelRatio, 2);
       const canvas = document.getElementById('name-canvas');
       canvas.style.width  = W + 'px';
       canvas.style.height = H + 'px';
+      canvas.style.top    = '-40px';
+      canvas.style.left   = '-90px';
 
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       renderer.setSize(W, H);
@@ -949,25 +951,56 @@
       pl.position.set(-4, 2, 3);
       scene.add(pl);
 
+      const SIZE = 0.88, DEPTH = 0.32;
+      const TRACKING = -0.05;   // letter spacing
+      const LINE_Y   =  0.44;   // line offset (tighter)
+
+      const cfg = {
+        font: null, size: SIZE, depth: DEPTH,
+        curveSegments: 8,
+        bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 3
+      };
+      const mat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.2 });
+
+      function buildLine(word, font) {
+        const lineGrp = new THREE.Group();
+        let x = 0;
+        for (const ch of [...word]) {
+          if (ch === 'õ') {
+            // o
+            const oGeo = new TextGeometry('o', { ...cfg, font });
+            oGeo.computeBoundingBox();
+            const oW = oGeo.boundingBox.max.x - oGeo.boundingBox.min.x;
+            const oMesh = new THREE.Mesh(oGeo, mat);
+            oMesh.position.x = x;
+            lineGrp.add(oMesh);
+            // ~ above
+            const tGeo = new TextGeometry('~', { ...cfg, font, size: SIZE * 0.48, depth: DEPTH * 0.5 });
+            tGeo.computeBoundingBox();
+            const tW = tGeo.boundingBox.max.x - tGeo.boundingBox.min.x;
+            const tMesh = new THREE.Mesh(tGeo, mat);
+            tMesh.position.set(x + (oW - tW) / 2, SIZE * 0.63, 0);
+            lineGrp.add(tMesh);
+            x += oW + TRACKING;
+          } else {
+            const geo = new TextGeometry(ch, { ...cfg, font });
+            geo.computeBoundingBox();
+            const w = geo.boundingBox.max.x - geo.boundingBox.min.x;
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.x = x;
+            lineGrp.add(mesh);
+            x += w + TRACKING;
+          }
+        }
+        lineGrp.position.x = -x / 2;
+        return lineGrp;
+      }
+
       const loader = new FontLoader();
       loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', font => {
-        const cfg = {
-          font, size: 0.88, depth: 0.32,
-          curveSegments: 8,
-          bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 3
-        };
-        const mat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.2 });
         const grp = new THREE.Group();
-
-        ['Rui', 'Simoes'].forEach((word, li) => {
-          const geo = new TextGeometry(word, cfg);
-          geo.computeBoundingBox();
-          const cx = (geo.boundingBox.max.x + geo.boundingBox.min.x) / 2;
-          const mesh = new THREE.Mesh(geo, mat);
-          mesh.position.set(-cx, li === 0 ? 0.54 : -0.54, 0);
-          grp.add(mesh);
-        });
-
+        const l0 = buildLine('Rui', font);       l0.position.y =  LINE_Y; grp.add(l0);
+        const l1 = buildLine('Simões', font); l1.position.y = -LINE_Y; grp.add(l1);
         scene.add(grp);
         (function animate() {
           requestAnimationFrame(animate);
