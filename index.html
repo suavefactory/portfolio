@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portfolio — Rui Simões</title>
+  <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.164.1/build/three.module.js","three/addons/":"https://unpkg.com/three@0.164.1/examples/jsm/"}}</script>
   <link rel="icon" type="image/png" href="favicon.png" id="favicon">
   <script>
     if (!/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
@@ -330,39 +331,14 @@
       text-decoration: underline;
     }
 
-    /* ── 3D Name ── */
-    #name-3d-wrap {
+    /* ── 3D Name Canvas ── */
+    #name-canvas {
       position: fixed;
-      top: -12px;
-      left: -8px;
+      top: 0;
+      left: 0;
       z-index: 500;
       pointer-events: none;
-      perspective: 600px;
-    }
-
-    #name-3d {
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-weight: 900;
-      font-size: clamp(36px, 4.5vw, 62px);
-      line-height: 0.88;
-      white-space: nowrap;
-      transform-style: preserve-3d;
-      animation: spin3d 6s linear infinite;
-      transform-origin: 50% 50%;
-    }
-
-    .name-layer {
-      position: absolute;
-      top: 0; left: 0;
-      color: #000;
-      white-space: nowrap;
-    }
-
-    .name-layer:first-child { position: relative; }
-
-    @keyframes spin3d {
-      from { transform: rotateY(0deg); }
-      to   { transform: rotateY(360deg); }
+      display: block;
     }
 
     /* ── Footer ── */
@@ -385,7 +361,7 @@
     @media (hover: none), (max-width: 700px) {
       * { cursor: auto !important; }
       #cursor { display: none; }
-      #name-3d-wrap { display: none; }
+      #name-canvas { display: none; }
       body::after { display: none; }
       body { font-size: 13px; }
 
@@ -428,9 +404,7 @@
 <body>
 
   <div id="cursor"></div>
-  <div id="name-3d-wrap">
-    <div id="name-3d"></div>
-  </div>
+  <canvas id="name-canvas"></canvas>
 
   <!-- Header -->
   <header>
@@ -493,18 +467,6 @@
     // ── Mobile detection ──────────────────────────────────────────────
     const isMobile = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
 
-    // ── 3D Name Extrude ──────────────────────────────────────────────
-    if (!isMobile) (function() {
-      const el = document.getElementById('name-3d');
-      const LAYERS = 20, STEP = 1;
-      for (let i = 0; i < LAYERS; i++) {
-        const d = document.createElement('div');
-        d.className = 'name-layer';
-        d.innerHTML = 'Rui<br>Simões';
-        d.style.transform = `translateZ(${-i * STEP}px)`;
-        el.appendChild(d);
-      }
-    })();
 
     // ── Data ─────────────────────────────────────────────────────────
     const projects = [
@@ -956,6 +918,63 @@
       cells.forEach(c => { c.style.background = ""; });
       counterEl.innerHTML = `—&nbsp;/&nbsp;<span>${String(projects.length).padStart(2, "0")}</span>`;
       setTicker(DEFAULT_TICKER);
+    });
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+    const isMob = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
+    if (isMob) { document.getElementById('name-canvas').style.display = 'none'; return; }
+
+    const W = 320, H = 190, dpr = Math.min(devicePixelRatio, 2);
+    const canvas = document.getElementById('name-canvas');
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(dpr);
+
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
+    camera.position.z = 6;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const dl = new THREE.DirectionalLight(0xffffff, 1.4);
+    dl.position.set(3, 3, 4);
+    scene.add(dl);
+    const pl = new THREE.PointLight(0x8888ff, 0.6, 20);
+    pl.position.set(-4, 2, 3);
+    scene.add(pl);
+
+    const loader = new FontLoader();
+    loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', font => {
+      const cfg = {
+        font, size: 0.88, depth: 0.32,
+        curveSegments: 8,
+        bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 3
+      };
+      const mat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.2 });
+      const grp = new THREE.Group();
+
+      ['Rui', 'Simoes'].forEach((word, li) => {
+        const geo = new TextGeometry(word, cfg);
+        geo.computeBoundingBox();
+        const cx = (geo.boundingBox.max.x + geo.boundingBox.min.x) / 2;
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(-cx, li === 0 ? 0.54 : -0.54, 0);
+        grp.add(mesh);
+      });
+
+      scene.add(grp);
+      (function animate() {
+        requestAnimationFrame(animate);
+        grp.rotation.y += 0.008;
+        renderer.render(scene, camera);
+      })();
     });
   </script>
 
