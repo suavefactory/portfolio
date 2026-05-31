@@ -352,7 +352,10 @@
       font-size: 10.5px;
     }
 
-    #clock { display: block; }
+    #clock {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.03em;
+    }
 
     /* ── Mobile ── */
     @media (hover: none), (max-width: 700px) {
@@ -456,12 +459,7 @@
 
   <!-- Footer -->
   <footer>
-    <svg id="clock" width="50" height="50" viewBox="-1 -1 2 2" style="display:block;">
-      <line id="hand-h" x1="0" y1="0.12" x2="0" y2="-0.5"  stroke="#000" stroke-width="0.12" stroke-linecap="round"/>
-      <line id="hand-m" x1="0" y1="0.14" x2="0" y2="-0.72" stroke="#000" stroke-width="0.07" stroke-linecap="round"/>
-      <line id="hand-s" x1="0" y1="0.18" x2="0" y2="-0.84" stroke="#000" stroke-width="0.03" stroke-linecap="round"/>
-      <circle cx="0" cy="0" r="0.07" fill="#000"/>
-    </svg>
+    <span id="clock"></span>
     <span>Selected Work 2022–Present</span>
   </footer>
 
@@ -758,15 +756,12 @@
     }
 
     // ── Clock ─────────────────────────────────────────────────────────
-    const handH = document.getElementById("hand-h");
-    const handM = document.getElementById("hand-m");
-    const handS = document.getElementById("hand-s");
     function tick() {
       const now = new Date();
-      const h = now.getHours() % 12, m = now.getMinutes(), s = now.getSeconds();
-      handH.setAttribute("transform", `rotate(${((h + m/60) / 12) * 360})`);
-      handM.setAttribute("transform", `rotate(${((m + s/60) / 60) * 360})`);
-      handS.setAttribute("transform", `rotate(${(s / 60) * 360})`);
+      const hh  = String(now.getHours()).padStart(2, "0");
+      const mm  = String(now.getMinutes()).padStart(2, "0");
+      const ss  = String(now.getSeconds()).padStart(2, "0");
+      document.getElementById("clock").textContent = `${hh}:${mm}:${ss}`;
     }
     tick();
     setInterval(tick, 1000);
