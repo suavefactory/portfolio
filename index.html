@@ -330,7 +330,7 @@
       text-decoration: underline;
     }
 
-    /* ── Name Drop ── */
+    /* ── Name Wave ── */
     #name-3d-wrap {
       position: fixed;
       top: 10px;
@@ -343,16 +343,30 @@
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-weight: 900;
       font-size: clamp(36px, 4.5vw, 62px);
-      line-height: 0.88;
+      line-height: 0.95;
       white-space: nowrap;
-      color: #000;
-      opacity: 0;
-      animation: nameDrop 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
     }
 
-    @keyframes nameDrop {
-      0%   { transform: translateY(-80px); opacity: 0; }
-      100% { transform: translateY(0);     opacity: 1; }
+    #name-3d div { display: block; }
+
+    #name-3d span {
+      display: inline-block;
+      animation: nameWave 1.2s ease-in-out infinite, nameColor 4s linear infinite;
+    }
+
+    @keyframes nameWave {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    @keyframes nameColor {
+      0%   { color: #ff3366; }
+      16%  { color: #ff9900; }
+      33%  { color: #ffff00; }
+      50%  { color: #33ff99; }
+      66%  { color: #33aaff; }
+      83%  { color: #cc33ff; }
+      100% { color: #ff3366; }
     }
 
     /* ── Footer ── */
@@ -483,9 +497,17 @@
     // ── Mobile detection ──────────────────────────────────────────────
     const isMobile = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
 
-    // ── Name ──────────────────────────────────────────────────────────
+    // ── Name Wave ────────────────────────────────────────────────────
     if (!isMobile) {
-      document.getElementById('name-3d').innerHTML = 'Rui<br>Simões';
+      const el = document.getElementById('name-3d');
+      const lines = ['Rui', 'Simões'];
+      let i = 0;
+      el.innerHTML = lines.map(line =>
+        '<div>' + [...line].map(ch => {
+          const d = (i++ * 0.12).toFixed(2);
+          return `<span style="animation-delay:${d}s,${d}s">${ch}</span>`;
+        }).join('') + '</div>'
+      ).join('');
     }
 
     // ── Data ─────────────────────────────────────────────────────────
