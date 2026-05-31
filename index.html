@@ -330,43 +330,39 @@
       text-decoration: underline;
     }
 
-    /* ── Name Wave ── */
+    /* ── 3D Name ── */
     #name-3d-wrap {
       position: fixed;
-      top: 10px;
-      left: 8px;
+      top: -12px;
+      left: -8px;
       z-index: 500;
       pointer-events: none;
+      perspective: 600px;
     }
 
     #name-3d {
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-weight: 900;
       font-size: clamp(36px, 4.5vw, 62px);
-      line-height: 0.95;
+      line-height: 0.88;
+      white-space: nowrap;
+      transform-style: preserve-3d;
+      animation: spin3d 6s linear infinite;
+      transform-origin: 50% 50%;
+    }
+
+    .name-layer {
+      position: absolute;
+      top: 0; left: 0;
+      color: #000;
       white-space: nowrap;
     }
 
-    #name-3d div { display: block; }
+    .name-layer:first-child { position: relative; }
 
-    #name-3d span {
-      display: inline-block;
-      animation: nameWave 1.2s ease-in-out infinite, nameColor 4s linear infinite;
-    }
-
-    @keyframes nameWave {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-10px); }
-    }
-
-    @keyframes nameColor {
-      0%   { color: #ff3366; }
-      16%  { color: #ff9900; }
-      33%  { color: #ffff00; }
-      50%  { color: #33ff99; }
-      66%  { color: #33aaff; }
-      83%  { color: #cc33ff; }
-      100% { color: #ff3366; }
+    @keyframes spin3d {
+      from { transform: rotateY(0deg); }
+      to   { transform: rotateY(360deg); }
     }
 
     /* ── Footer ── */
@@ -497,18 +493,18 @@
     // ── Mobile detection ──────────────────────────────────────────────
     const isMobile = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
 
-    // ── Name Wave ────────────────────────────────────────────────────
-    if (!isMobile) {
+    // ── 3D Name Extrude ──────────────────────────────────────────────
+    if (!isMobile) (function() {
       const el = document.getElementById('name-3d');
-      const lines = ['Rui', 'Simões'];
-      let i = 0;
-      el.innerHTML = lines.map(line =>
-        '<div>' + [...line].map(ch => {
-          const d = (i++ * 0.12).toFixed(2);
-          return `<span style="animation-delay:${d}s,${d}s">${ch}</span>`;
-        }).join('') + '</div>'
-      ).join('');
-    }
+      const LAYERS = 20, STEP = 1;
+      for (let i = 0; i < LAYERS; i++) {
+        const d = document.createElement('div');
+        d.className = 'name-layer';
+        d.innerHTML = 'Rui<br>Simões';
+        d.style.transform = `translateZ(${-i * STEP}px)`;
+        el.appendChild(d);
+      }
+    })();
 
     // ── Data ─────────────────────────────────────────────────────────
     const projects = [
