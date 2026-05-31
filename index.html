@@ -927,55 +927,55 @@
     import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
     const isMob = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
-    if (isMob) { document.getElementById('name-canvas').style.display = 'none'; return; }
+    if (!isMob) {
+      const W = 320, H = 190, dpr = Math.min(devicePixelRatio, 2);
+      const canvas = document.getElementById('name-canvas');
+      canvas.style.width  = W + 'px';
+      canvas.style.height = H + 'px';
 
-    const W = 320, H = 190, dpr = Math.min(devicePixelRatio, 2);
-    const canvas = document.getElementById('name-canvas');
-    canvas.style.width  = W + 'px';
-    canvas.style.height = H + 'px';
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(W, H);
+      renderer.setPixelRatio(dpr);
 
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setSize(W, H);
-    renderer.setPixelRatio(dpr);
+      const scene  = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
+      camera.position.z = 6;
 
-    const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
-    camera.position.z = 6;
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+      const dl = new THREE.DirectionalLight(0xffffff, 1.4);
+      dl.position.set(3, 3, 4);
+      scene.add(dl);
+      const pl = new THREE.PointLight(0x8888ff, 0.6, 20);
+      pl.position.set(-4, 2, 3);
+      scene.add(pl);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const dl = new THREE.DirectionalLight(0xffffff, 1.4);
-    dl.position.set(3, 3, 4);
-    scene.add(dl);
-    const pl = new THREE.PointLight(0x8888ff, 0.6, 20);
-    pl.position.set(-4, 2, 3);
-    scene.add(pl);
+      const loader = new FontLoader();
+      loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', font => {
+        const cfg = {
+          font, size: 0.88, depth: 0.32,
+          curveSegments: 8,
+          bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 3
+        };
+        const mat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.2 });
+        const grp = new THREE.Group();
 
-    const loader = new FontLoader();
-    loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', font => {
-      const cfg = {
-        font, size: 0.88, depth: 0.32,
-        curveSegments: 8,
-        bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 3
-      };
-      const mat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.2 });
-      const grp = new THREE.Group();
+        ['Rui', 'Simoes'].forEach((word, li) => {
+          const geo = new TextGeometry(word, cfg);
+          geo.computeBoundingBox();
+          const cx = (geo.boundingBox.max.x + geo.boundingBox.min.x) / 2;
+          const mesh = new THREE.Mesh(geo, mat);
+          mesh.position.set(-cx, li === 0 ? 0.54 : -0.54, 0);
+          grp.add(mesh);
+        });
 
-      ['Rui', 'Simoes'].forEach((word, li) => {
-        const geo = new TextGeometry(word, cfg);
-        geo.computeBoundingBox();
-        const cx = (geo.boundingBox.max.x + geo.boundingBox.min.x) / 2;
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(-cx, li === 0 ? 0.54 : -0.54, 0);
-        grp.add(mesh);
+        scene.add(grp);
+        (function animate() {
+          requestAnimationFrame(animate);
+          grp.rotation.y += 0.008;
+          renderer.render(scene, camera);
+        })();
       });
-
-      scene.add(grp);
-      (function animate() {
-        requestAnimationFrame(animate);
-        grp.rotation.y += 0.008;
-        renderer.render(scene, camera);
-      })();
-    });
+    }
   </script>
 
 </body>
