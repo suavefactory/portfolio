@@ -925,6 +925,7 @@
     import * as THREE from 'three';
     import { FontLoader } from 'three/addons/loaders/FontLoader.js';
     import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     const isMob = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
     if (!isMob) {
@@ -935,71 +936,95 @@
       canvas.style.top    = '-40px';
       canvas.style.left   = '-130px';
 
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: false });
       renderer.setSize(W, H);
       renderer.setPixelRatio(dpr);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
 
       const scene  = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
       camera.position.z = 6;
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-      const dl = new THREE.DirectionalLight(0xffffff, 1.4);
+      // Environment for reflections on glass surface
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+
+      // Background plane — glass refracts this (matches page bg)
+      scene.add(Object.assign(
+        new THREE.Mesh(new THREE.PlaneGeometry(14, 8),
+          new THREE.MeshBasicMaterial({ color: 0xe8e8e8 })),
+        { position: new THREE.Vector3(0, 0, -1.6) }
+      ));
+
+      // Subtle horizontal lines on background (makes refraction visible)
+      for (let y = -3.5; y <= 3.5; y += 0.32) {
+        scene.add(Object.assign(
+          new THREE.Mesh(new THREE.PlaneGeometry(14, 0.01),
+            new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.06 })),
+          { position: new THREE.Vector3(0, y, -1.55) }
+        ));
+      }
+
+      // Lights
+      scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+      const dl = new THREE.DirectionalLight(0xffffff, 0.6);
       dl.position.set(3, 3, 4);
       scene.add(dl);
-      const pl = new THREE.PointLight(0x8888ff, 0.6, 20);
-      pl.position.set(-4, 2, 3);
-      scene.add(pl);
 
-      const SIZE = 0.88, DEPTH = 0.32;
-      const TRACKING = -0.05;   // letter spacing
-      const LINE_Y   =  0.44;   // line offset (tighter)
+      // Liquid glass material
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        transmission: 1,
+        roughness: 0,
+        metalness: 0,
+        ior: 1.9,
+        thickness: 2.5,
+        envMapIntensity: 1.5,
+        clearcoat: 1,
+        clearcoatRoughness: 0,
+        transparent: true,
+        color: 0xffffff,
+        attenuationColor: new THREE.Color(0.9, 0.95, 1),
+        attenuationDistance: 0.4,
+      });
 
-      const cfg = {
-        font: null, size: SIZE, depth: DEPTH,
-        curveSegments: 8,
-        bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 3
-      };
-      const mat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.2 });
+      const SIZE = 0.88, DEPTH = 0.32, TRACKING = -0.05, LINE_Y = 0.44;
+      const cfg = { font: null, size: SIZE, depth: DEPTH, curveSegments: 12,
+        bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 5 };
 
       function buildLine(word, font) {
-        const lineGrp = new THREE.Group();
+        const grp = new THREE.Group();
         let x = 0;
         for (const ch of [...word]) {
           if (ch === 'õ') {
-            // o
             const oGeo = new TextGeometry('o', { ...cfg, font });
             oGeo.computeBoundingBox();
             const oW = oGeo.boundingBox.max.x - oGeo.boundingBox.min.x;
-            const oMesh = new THREE.Mesh(oGeo, mat);
-            oMesh.position.x = x;
-            lineGrp.add(oMesh);
-            // ~ above
+            const oMesh = new THREE.Mesh(oGeo, glassMat); oMesh.position.x = x; grp.add(oMesh);
             const tGeo = new TextGeometry('~', { ...cfg, font, size: SIZE * 0.48, depth: DEPTH * 0.5 });
             tGeo.computeBoundingBox();
             const tW = tGeo.boundingBox.max.x - tGeo.boundingBox.min.x;
-            const tMesh = new THREE.Mesh(tGeo, mat);
-            tMesh.position.set(x + (oW - tW) / 2, SIZE * 0.63, 0);
-            lineGrp.add(tMesh);
+            const tMesh = new THREE.Mesh(tGeo, glassMat);
+            tMesh.position.set(x + (oW - tW) / 2, SIZE * 0.63, 0); grp.add(tMesh);
             x += oW + TRACKING;
           } else {
             const geo = new TextGeometry(ch, { ...cfg, font });
             geo.computeBoundingBox();
             const w = geo.boundingBox.max.x - geo.boundingBox.min.x;
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.x = x;
-            lineGrp.add(mesh);
+            const mesh = new THREE.Mesh(geo, glassMat); mesh.position.x = x; grp.add(mesh);
             x += w + TRACKING;
           }
         }
-        lineGrp.position.x = -x / 2;
-        return lineGrp;
+        grp.position.x = -x / 2;
+        return grp;
       }
 
       const loader = new FontLoader();
       loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', font => {
         const grp = new THREE.Group();
-        const l0 = buildLine('Rui', font);       l0.position.y =  LINE_Y; grp.add(l0);
+        const l0 = buildLine('Rui', font);    l0.position.y =  LINE_Y; grp.add(l0);
         const l1 = buildLine('Simões', font); l1.position.y = -LINE_Y; grp.add(l1);
         scene.add(grp);
         (function animate() {
