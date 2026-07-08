@@ -525,12 +525,11 @@
         tag: "", year: "2026",
         description: "Motion designer on A Noite em Que Aprendi a Voar — created the visual identity and motion assets for the film.",
         media: [
-          "a noite em que aprendi a voar, visual identity/LUCIO.mp4",
-          "a noite em que aprendi a voar, visual identity/PombosComSwag.mp4",
-          "a noite em que aprendi a voar, visual identity/PombosComSwag2.mp4",
-          "a noite em que aprendi a voar, visual identity/SUNSSsSs.mp4",
-          "a noite em que aprendi a voar, visual identity/Screenshot 2026-07-08 at 14.40.57.png",
-          "a noite em que aprendi a voar, visual identity/Screenshot 2026-07-08 at 14.41.19.png",
+          { src: "a noite em que aprendi a voar, visual identity/LUCIO.mp4", bg: "white" },
+          { src: "a noite em que aprendi a voar, visual identity/PombosComSwag.mp4", cover: true },
+          { src: "a noite em que aprendi a voar, visual identity/PombosComSwag2.mp4", cover: true },
+          { src: "a noite em que aprendi a voar, visual identity/SUNSSsSs.mp4", bg: "white" },
+          { src: "a noite em que aprendi a voar, visual identity/Screenshot 2026-07-08 at 14.40.57.png", bg: "white" },
         ]
       },
       {
@@ -861,26 +860,35 @@
       cellPhs[i].style.display  = type === "ph"   ? "" : "none";
     }
 
-    function renderFrame(media, cover, offset, bg) {
+    function renderFrame(media, defaultCover, offset, defaultBg) {
       playTimers.forEach(t => clearTimeout(t));
       playTimers = [];
 
-      const srcs = Array.from({ length: 5 }, (_, i) =>
+      const raw = Array.from({ length: 5 }, (_, i) =>
         media.length ? media[(offset + i) % media.length] : null
       );
-      const uniqueVideos = [...new Set(srcs.filter(s => s && VIDEO_EXT.test(s)))];
-      const singleVideo  = uniqueVideos.length === 1 && srcs.every(s => !s || s === uniqueVideos[0]);
+      // Normalise: string → {src}; null → null
+      const items = raw.map(r => !r ? null : (typeof r === "string" ? { src: r } : r));
+
+      const vidSrcs = items.filter(it => it && VIDEO_EXT.test(it.src)).map(it => it.src);
+      const uniqueVideos = [...new Set(vidSrcs)];
+      const singleVideo  = uniqueVideos.length === 1 && items.every(it => !it || it.src === uniqueVideos[0]);
 
       cells.forEach((cell, i) => {
-        const src = srcs[i] || null;
+        const item = items[i];
+        const src  = item ? item.src : null;
         if (src === cellSrc[i]) return;
         cellSrc[i] = src;
 
-        cell.style.background = bg || "";
+        const cover = item?.cover ?? defaultCover ?? false;
+        const bg    = item?.bg    ?? defaultBg    ?? "";
+
+        cell.style.background = bg;
 
         if (src && VIDEO_EXT.test(src)) {
           cellVids[i].src = encodePath(src);
           cellVids[i].style.objectFit = cover ? "cover" : "contain";
+          cellVids[i].style.background = bg;
           showCell(i, "vid");
           if (singleVideo) {
             const t = setTimeout(() => cellVids[i].play(), i * FRAME_MS);
@@ -892,8 +900,8 @@
           const img = cellImgs[i];
           img.src = encodePath(src);
           img.className = cover ? "cover" : "";
-          img.style.padding   = (bg && !cover) ? "0" : "";
           img.style.objectFit = cover ? "cover" : "contain";
+          img.style.padding   = "0";
           showCell(i, "img");
         } else {
           showCell(i, "ph");
