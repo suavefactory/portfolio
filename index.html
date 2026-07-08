@@ -526,8 +526,8 @@
         description: "Motion designer on A Noite em Que Aprendi a Voar — created the visual identity and motion assets for the film.",
         media: [
           { src: "a noite em que aprendi a voar, visual identity/LUCIO.mp4", bg: "white" },
-          { src: "a noite em que aprendi a voar, visual identity/PombosComSwag.mp4", cover: true },
-          { src: "a noite em que aprendi a voar, visual identity/PombosComSwag2.mp4", cover: true },
+          { src: "a noite em que aprendi a voar, visual identity/PombosComSwag.mp4", cover: true, scale: 1.13 },
+          { src: "a noite em que aprendi a voar, visual identity/PombosComSwag2.mp4", cover: true, scale: 1.13 },
           { src: "a noite em que aprendi a voar, visual identity/SUNSSsSs.mp4", bg: "white" },
           { src: "a noite em que aprendi a voar, visual identity/Screenshot 2026-07-08 at 14.40.57.png", bg: "white" },
         ]
@@ -882,12 +882,14 @@
 
         const cover = item?.cover ?? defaultCover ?? false;
         const bg    = item?.bg    ?? defaultBg    ?? "";
+        const scale = item?.scale ?? 1;
 
         cell.style.background = bg;
 
         if (src && VIDEO_EXT.test(src)) {
           cellVids[i].src = encodePath(src);
           cellVids[i].style.objectFit = cover ? "cover" : "contain";
+          cellVids[i].style.transform = scale !== 1 ? `scale(${scale})` : "";
           cellVids[i].style.background = bg;
           showCell(i, "vid");
           if (singleVideo) {
@@ -901,6 +903,7 @@
           img.src = encodePath(src);
           img.className = cover ? "cover" : "";
           img.style.objectFit = cover ? "cover" : "contain";
+          img.style.transform = scale !== 1 ? `scale(${scale})` : "";
           img.style.padding   = "0";
           showCell(i, "img");
         } else {
