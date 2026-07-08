@@ -524,12 +524,13 @@
         disciplines: "Motion Design",
         tag: "", year: "2026",
         description: "Motion designer on A Noite em Que Aprendi a Voar — created the visual identity and motion assets for the film.",
-        cover: true,
         media: [
           "a noite em que aprendi a voar, visual identity/LUCIO.mp4",
           "a noite em que aprendi a voar, visual identity/PombosComSwag.mp4",
           "a noite em que aprendi a voar, visual identity/PombosComSwag2.mp4",
           "a noite em que aprendi a voar, visual identity/SUNSSsSs.mp4",
+          "a noite em que aprendi a voar, visual identity/Screenshot 2026-07-08 at 14.40.57.png",
+          "a noite em que aprendi a voar, visual identity/Screenshot 2026-07-08 at 14.41.19.png",
         ]
       },
       {
@@ -879,6 +880,7 @@
 
         if (src && VIDEO_EXT.test(src)) {
           cellVids[i].src = encodePath(src);
+          cellVids[i].style.objectFit = cover ? "cover" : "contain";
           showCell(i, "vid");
           if (singleVideo) {
             const t = setTimeout(() => cellVids[i].play(), i * FRAME_MS);
@@ -890,8 +892,8 @@
           const img = cellImgs[i];
           img.src = encodePath(src);
           img.className = cover ? "cover" : "";
-          img.style.padding   = bg ? "0"       : "";
-          img.style.objectFit = bg ? "contain" : "";
+          img.style.padding   = (bg && !cover) ? "0" : "";
+          img.style.objectFit = cover ? "cover" : "contain";
           showCell(i, "img");
         } else {
           showCell(i, "ph");
