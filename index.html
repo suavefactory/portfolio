@@ -94,12 +94,34 @@
       opacity: 0.5;
     }
 
-    .header-counter {
+    .header-contact {
       text-align: right;
+      position: relative;
       font-size: 11.5px;
+    }
+
+    .contact-label {
+      text-decoration: underline;
       opacity: 0.5;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.03em;
+      cursor: default;
+    }
+
+    .contact-dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .header-contact:hover .contact-dropdown {
+      opacity: 1;
     }
 
     /* ── Image strip ── */
@@ -409,7 +431,13 @@
   <header>
     <span class="header-name" style="visibility:hidden">Rui Simões</span>
     <span class="header-role">AI Filmmaker, Designer, Editor</span>
-    <span class="header-counter" id="counterEl">—&nbsp;/&nbsp;<span id="totalEl"></span></span>
+    <div class="header-contact">
+      <span class="contact-label">contact</span>
+      <div class="contact-dropdown">
+        <span>@ruipepo</span>
+        <span>ruipedrosimoes14@gmail.com</span>
+      </div>
+    </div>
   </header>
 
   <!-- Image strip -->
@@ -710,8 +738,6 @@
     const list        = document.getElementById("projectList");
     const strip       = document.getElementById("imageStrip");
     const cells       = strip.querySelectorAll(".image-cell");
-    const counterEl   = document.getElementById("counterEl");
-    const totalEl     = document.getElementById("totalEl");
     const cursor      = document.getElementById("cursor");
     const tickerTrack = document.getElementById("tickerTrack");
     const tickerText  = document.getElementById("tickerText");
@@ -738,7 +764,6 @@
 
     setTicker(DEFAULT_TICKER);
 
-    totalEl.textContent = String(projects.length).padStart(2, "0");
 
     // ── Custom cursor (RAF-throttled) ─────────────────────────────────
     if (!isMobile) {
@@ -874,7 +899,6 @@
       row.classList.add("active");
       setImages(p.media, p.cover, p.bg);
       if (p.description) setTicker(p.description);
-      counterEl.innerHTML = `${num}&nbsp;/&nbsp;<span>${String(projects.length).padStart(2, "0")}</span>`;
     }
 
     projects.forEach((p, idx) => {
@@ -937,7 +961,6 @@
       clearInterval(cycleInterval);
       if (activeRow) { activeRow.classList.remove("active"); activeRow = null; }
       cells.forEach(c => { c.style.background = ""; });
-      counterEl.innerHTML = `—&nbsp;/&nbsp;<span>${String(projects.length).padStart(2, "0")}</span>`;
       setTicker(DEFAULT_TICKER);
     });
   </script>
