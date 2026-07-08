@@ -25,9 +25,8 @@
       width: 18px; height: 18px;
       pointer-events: none;
       z-index: 9999;
-      transform: translate(-50%, -50%);
       mix-blend-mode: difference;
-      will-change: left, top;
+      will-change: transform;
     }
 
     #cursor::before,
@@ -729,10 +728,12 @@
       const repeated = (text + " — ").repeat(6);
       tickerText.textContent  = repeated;
       tickerClone.textContent = repeated;
-      tickerTrack.style.animation = "none";
-      tickerTrack.offsetWidth; // force reflow
-      const duration = tickerText.offsetWidth / PX_PER_SEC;
-      tickerTrack.style.animation = `ticker-scroll ${duration}s linear infinite`;
+      tickerTrack.style.animationName = "none";
+      requestAnimationFrame(() => {
+        const duration = tickerText.scrollWidth / PX_PER_SEC;
+        tickerTrack.style.animationDuration = duration + "s";
+        tickerTrack.style.animationName = "ticker-scroll";
+      });
     }
 
     setTicker(DEFAULT_TICKER);
@@ -747,8 +748,7 @@
         if (!cursorPending) {
           cursorPending = true;
           requestAnimationFrame(() => {
-            cursor.style.left = cx + "px";
-            cursor.style.top  = cy + "px";
+            cursor.style.transform = `translate(${cx - 9}px, ${cy - 9}px)`;
             cursorPending = false;
           });
         }
@@ -776,9 +776,38 @@
 
     let cycleInterval = null;
 
-    const FRAME_MS = (3 / 24) * 1000; // 3 frames at 24fps in milliseconds
+    const FRAME_MS = (3 / 24) * 1000;
     let playTimers = [];
-    const cellSrc = Array(5).fill(null); // cached src per cell
+    const cellSrc = Array(5).fill(null);
+
+    // Pre-create persistent img + video + placeholder per cell — no more innerHTML
+    const cellImgs  = cells.map(cell => {
+      const img = document.createElement("img");
+      img.alt = "";
+      img.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;";
+      cell.appendChild(img);
+      return img;
+    });
+    const cellVids  = cells.map(cell => {
+      const v = document.createElement("video");
+      v.muted = true; v.loop = true; v.playsInline = true;
+      v.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;";
+      cell.appendChild(v);
+      return v;
+    });
+    const cellPhs   = cells.map(cell => {
+      const ph = document.createElement("div");
+      ph.className = "placeholder";
+      ph.style.display = "none";
+      cell.appendChild(ph);
+      return ph;
+    });
+
+    function showCell(i, type) {
+      cellImgs[i].style.display = type === "img"  ? "" : "none";
+      cellVids[i].style.display = type === "vid"  ? "" : "none";
+      cellPhs[i].style.display  = type === "ph"   ? "" : "none";
+    }
 
     function renderFrame(media, cover, offset, bg) {
       playTimers.forEach(t => clearTimeout(t));
@@ -792,37 +821,29 @@
 
       cells.forEach((cell, i) => {
         const src = srcs[i] || null;
-
-        // skip if same src already showing
         if (src === cellSrc[i]) return;
         cellSrc[i] = src;
 
-        cell.innerHTML = "";
         cell.style.background = bg || "";
 
         if (src && VIDEO_EXT.test(src)) {
-          const v = document.createElement("video");
-          v.src = encodePath(src);
-          v.muted = true; v.loop = true; v.playsInline = true;
-          v.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;";
-          cell.appendChild(v);
+          cellVids[i].src = encodePath(src);
+          showCell(i, "vid");
           if (singleVideo) {
-            const t = setTimeout(() => v.play(), i * FRAME_MS);
+            const t = setTimeout(() => cellVids[i].play(), i * FRAME_MS);
             playTimers.push(t);
           } else {
-            v.play();
+            cellVids[i].play();
           }
         } else if (src) {
-          const img = document.createElement("img");
+          const img = cellImgs[i];
           img.src = encodePath(src);
-          img.alt = "";
-          if (cover) img.classList.add("cover");
-          if (bg) { img.style.padding = "0"; img.style.objectFit = "contain"; }
-          cell.appendChild(img);
+          img.className = cover ? "cover" : "";
+          img.style.padding   = bg ? "0"       : "";
+          img.style.objectFit = bg ? "contain" : "";
+          showCell(i, "img");
         } else {
-          const ph = document.createElement("div");
-          ph.className = "placeholder";
-          cell.appendChild(ph);
+          showCell(i, "ph");
         }
       });
     }
