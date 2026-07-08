@@ -988,15 +988,39 @@
         return lineGrp;
       }
 
+      // Mouse tracking — normalized -1 to 1
+      let mx = 0, my = 0, lx = 0, ly = 0;
+      window.addEventListener('mousemove', e => {
+        mx =  (e.clientX / window.innerWidth)  * 2 - 1;
+        my = -(e.clientY / window.innerHeight) * 2 + 1;
+      });
+
       const loader = new FontLoader();
       loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', font => {
-        const grp = new THREE.Group();
-        const l0 = buildLine('Rui', font);    l0.position.y =  LINE_Y; grp.add(l0);
-        const l1 = buildLine('Simões', font); l1.position.y = -LINE_Y; grp.add(l1);
-        scene.add(grp);
+        // Inner group: continuous 360° spin
+        const spinGrp = new THREE.Group();
+        const l0 = buildLine('Rui', font);    l0.position.y =  LINE_Y; spinGrp.add(l0);
+        const l1 = buildLine('Simões', font); l1.position.y = -LINE_Y; spinGrp.add(l1);
+
+        // Outer group: mouse tilt (doesn't accumulate with spin)
+        const tiltGrp = new THREE.Group();
+        tiltGrp.add(spinGrp);
+        scene.add(tiltGrp);
+
         (function animate() {
           requestAnimationFrame(animate);
-          grp.rotation.y += 0.008;
+
+          // Smooth lerp toward mouse position
+          lx += (mx - lx) * 0.04;
+          ly += (my - ly) * 0.04;
+
+          // Continuous Y spin
+          spinGrp.rotation.y += 0.008;
+
+          // Mouse tilt on outer group
+          tiltGrp.rotation.x = -ly * 0.35;
+          tiltGrp.rotation.z = -lx * 0.18;
+
           renderer.render(scene, camera);
         })();
       });
