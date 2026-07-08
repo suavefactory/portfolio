@@ -936,44 +936,59 @@
       canvas.style.top    = '-40px';
       canvas.style.left   = '-130px';
 
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: false });
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       renderer.setSize(W, H);
       renderer.setPixelRatio(dpr);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1;
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
 
       const scene  = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
       camera.position.z = 6;
 
-      // Environment map — drives reflections that flow across surface
+      // Build env map first, keep reference
       const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      const envTexture = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      scene.environment = envTexture;
       pmrem.dispose();
 
+      // Background plane — glass must have something opaque behind it to refract
+      const bg = new THREE.Mesh(
+        new THREE.PlaneGeometry(14, 9),
+        new THREE.MeshBasicMaterial({ color: 0xe8e8e8 })
+      );
+      bg.position.z = -2;
+      scene.add(bg);
+
+      // Horizontal lines on bg — makes refraction distortion visible
+      for (let y = -4; y <= 4; y += 0.3) {
+        const ln = new THREE.Mesh(
+          new THREE.PlaneGeometry(14, 0.01),
+          new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.07 })
+        );
+        ln.position.set(0, y, -1.95);
+        scene.add(ln);
+      }
+
       // Lights
-      scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-      const dl = new THREE.DirectionalLight(0xffffff, 1.8);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+      const dl = new THREE.DirectionalLight(0xffffff, 1.5);
       dl.position.set(3, 3, 4);
       scene.add(dl);
-      const pl = new THREE.PointLight(0x88aaff, 1.2, 20);
-      pl.position.set(-4, 2, 3);
-      scene.add(pl);
 
-      // Liquid glass: polished white, clearcoat, iridescence, env reflections
+      // Exact kodeimmersive values: transmission:1, ior:2, thickness:5
       const glassMat = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
+        envMap: envTexture,
+        envMapIntensity: 0.25,
+        transmission: 1,
+        opacity: 1,
         metalness: 0,
         roughness: 0,
-        clearcoat: 1,
-        clearcoatRoughness: 0,
-        envMapIntensity: 3,
-        iridescence: 0.6,
-        iridescenceIOR: 1.5,
-        iridescenceThicknessRange: [100, 600],
-        transparent: true,
-        opacity: 0.92,
+        ior: 2,
+        thickness: 5,
+        specularIntensity: 1,
+        specularColor: new THREE.Color(0xffffff),
       });
 
       const SIZE = 0.88, DEPTH = 0.32, TRACKING = -0.05, LINE_Y = 0.44;
