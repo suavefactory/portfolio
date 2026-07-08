@@ -69,7 +69,7 @@
     body {
       background: #e8e8e8;
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 11.5px;
+      font-size: 12px;
       color: #000;
       line-height: 1;
       min-height: 100%;
@@ -112,8 +112,8 @@
 
     .image-cell {
       position: relative;
-      aspect-ratio: 4 / 3;
-      background: #888;
+      aspect-ratio: 16 / 9;
+      background: #ccc;
       border-right: 1px solid #000;
       overflow: hidden;
     }
@@ -148,13 +148,7 @@
     .image-cell .placeholder {
       position: absolute;
       inset: 0;
-      background: repeating-linear-gradient(
-        -45deg,
-        #d4d4d4,
-        #d4d4d4 1px,
-        #dcdcdc 1px,
-        #dcdcdc 8px
-      );
+      background: #d8d8d8;
     }
 
     /* ── Project list ── */
@@ -280,17 +274,19 @@
     .project-row {
       display: grid;
       grid-template-columns: 28px 170px 1fr 220px 40px 68px;
-      padding: 4px 8px 3px;
+      padding: 6px 8px 5px;
       border-bottom: 1px solid rgba(0,0,0,0.1);
       gap: 0 10px;
       align-items: baseline;
       user-select: none;
+      transition: background 0.1s, color 0.1s, box-shadow 0.1s;
     }
 
     .project-row.active,
     .project-row.locked {
       background: #0055ff;
       color: #fff;
+      box-shadow: inset 3px 0 0 rgba(255,255,255,0.5);
     }
 
     .col-num {
@@ -816,6 +812,7 @@
           const img = document.createElement("img");
           img.src = encodePath(src);
           img.alt = "";
+          img.classList.add("wipe");
           if (cover) img.classList.add("cover");
           if (bg) { img.style.padding = "0"; img.style.objectFit = "contain"; }
           cell.appendChild(img);
