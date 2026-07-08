@@ -949,6 +949,7 @@
           cellVids[i].style.background = bg;
           showCell(i, "vid");
           if (singleVideo) {
+            cellVids[i].currentTime = 0;
             const t = setTimeout(() => cellVids[i].play(), i * FRAME_MS);
             playTimers.push(t);
           } else {
