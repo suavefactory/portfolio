@@ -947,47 +947,33 @@
       const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
       camera.position.z = 6;
 
-      // Environment for reflections on glass surface
+      // Environment map — drives reflections that flow across surface
       const pmrem = new THREE.PMREMGenerator(renderer);
       scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
       pmrem.dispose();
 
-      // Background plane — glass refracts this (matches page bg)
-      scene.add(Object.assign(
-        new THREE.Mesh(new THREE.PlaneGeometry(14, 8),
-          new THREE.MeshBasicMaterial({ color: 0xe8e8e8 })),
-        { position: new THREE.Vector3(0, 0, -1.6) }
-      ));
-
-      // Subtle horizontal lines on background (makes refraction visible)
-      for (let y = -3.5; y <= 3.5; y += 0.32) {
-        scene.add(Object.assign(
-          new THREE.Mesh(new THREE.PlaneGeometry(14, 0.01),
-            new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.06 })),
-          { position: new THREE.Vector3(0, y, -1.55) }
-        ));
-      }
-
       // Lights
-      scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-      const dl = new THREE.DirectionalLight(0xffffff, 0.6);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+      const dl = new THREE.DirectionalLight(0xffffff, 1.8);
       dl.position.set(3, 3, 4);
       scene.add(dl);
+      const pl = new THREE.PointLight(0x88aaff, 1.2, 20);
+      pl.position.set(-4, 2, 3);
+      scene.add(pl);
 
-      // Liquid glass material
+      // Liquid glass: polished white, clearcoat, iridescence, env reflections
       const glassMat = new THREE.MeshPhysicalMaterial({
-        transmission: 1,
-        roughness: 0,
+        color: 0xffffff,
         metalness: 0,
-        ior: 1.9,
-        thickness: 2.5,
-        envMapIntensity: 1.5,
+        roughness: 0,
         clearcoat: 1,
         clearcoatRoughness: 0,
+        envMapIntensity: 3,
+        iridescence: 0.6,
+        iridescenceIOR: 1.5,
+        iridescenceThicknessRange: [100, 600],
         transparent: true,
-        color: 0xffffff,
-        attenuationColor: new THREE.Color(0.9, 0.95, 1),
-        attenuationDistance: 0.4,
+        opacity: 0.92,
       });
 
       const SIZE = 0.88, DEPTH = 0.32, TRACKING = -0.05, LINE_Y = 0.44;
