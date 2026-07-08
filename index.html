@@ -520,8 +520,8 @@
       },
       {
         client: "A Noite em Que Aprendi a Voar",
-        title: "Visual Identity",
-        disciplines: "Motion Design",
+        title: "Short Film",
+        disciplines: "Visual Identity",
         tag: "", year: "2026",
         description: "Motion designer on A Noite em Que Aprendi a Voar — created the visual identity and motion assets for the film.",
         media: [
@@ -534,8 +534,8 @@
       },
       {
         client: "A Noite em Que Aprendi a Voar",
-        title: "Film Title",
-        disciplines: "Motion Design",
+        title: "Short Film",
+        disciplines: "Film Title, Motion Design",
         tag: "", year: "2026",
         description: "Motion designer on A Noite em Que Aprendi a Voar — designed and animated the film title sequence.",
         cover: true,
@@ -904,6 +904,7 @@
           img.className = cover ? "cover" : "";
           img.style.objectFit = cover ? "cover" : "contain";
           img.style.transform = scale !== 1 ? `scale(${scale})` : "";
+          img.style.background = bg;
           img.style.padding   = "0";
           showCell(i, "img");
         } else {
