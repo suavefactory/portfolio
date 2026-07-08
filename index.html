@@ -925,7 +925,6 @@
     import * as THREE from 'three';
     import { FontLoader } from 'three/addons/loaders/FontLoader.js';
     import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     const isMob = 'ontouchstart' in window || window.matchMedia('(hover: none)').matches;
     if (!isMob) {
@@ -939,61 +938,96 @@
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       renderer.setSize(W, H);
       renderer.setPixelRatio(dpr);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1;
+      renderer.setClearColor(0x000000, 0);
 
-      const scene  = new THREE.Scene();
+      const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
       camera.position.z = 6;
 
-      // Build env map first, keep reference
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      const envTexture = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-      scene.environment = envTexture;
-      pmrem.dispose();
-
-      // Background plane — glass must have something opaque behind it to refract
-      const bg = new THREE.Mesh(
-        new THREE.PlaneGeometry(14, 9),
-        new THREE.MeshBasicMaterial({ color: 0xe8e8e8 })
-      );
-      bg.position.z = -2;
-      scene.add(bg);
-
-      // Horizontal lines on bg — makes refraction distortion visible
-      for (let y = -4; y <= 4; y += 0.3) {
-        const ln = new THREE.Mesh(
-          new THREE.PlaneGeometry(14, 0.01),
-          new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.07 })
-        );
-        ln.position.set(0, y, -1.95);
-        scene.add(ln);
-      }
-
-      // Lights
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-      const dl = new THREE.DirectionalLight(0xffffff, 1.5);
-      dl.position.set(3, 3, 4);
-      scene.add(dl);
-
-      // Exact kodeimmersive values: transmission:1, ior:2, thickness:5
-      const glassMat = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff,
-        envMap: envTexture,
-        envMapIntensity: 0.25,
-        transmission: 1,
-        opacity: 1,
-        metalness: 0,
-        roughness: 0,
-        ior: 2,
-        thickness: 5,
-        specularIntensity: 1,
-        specularColor: new THREE.Color(0xffffff),
+      // FBO — pass 1 renders background here; glass samples from it with refraction
+      const FW = renderer.domElement.width;
+      const FH = renderer.domElement.height;
+      const fbo = new THREE.WebGLRenderTarget(FW, FH, {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
       });
 
+      // Build a canvas texture that looks like the page
+      // (glass will visibly distort these lines as it rotates)
+      const bgC = document.createElement('canvas');
+      bgC.width = FW; bgC.height = FH;
+      const bx = bgC.getContext('2d');
+      const bodyBg = getComputedStyle(document.body).backgroundColor || '#e8e8e8';
+      bx.fillStyle = bodyBg; bx.fillRect(0, 0, FW, FH);
+      bx.fillStyle = 'rgba(0,0,0,0.13)';
+      const step = Math.round(FH / 14);
+      for (let y = 0; y < FH; y += step) bx.fillRect(0, y, FW, Math.max(1, Math.round(dpr)));
+      const bgTex = new THREE.CanvasTexture(bgC);
+
+      // Background group — visible in FBO pass only
+      const bgGrp = new THREE.Group();
+      const bgPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(14, 9),
+        new THREE.MeshBasicMaterial({ map: bgTex })
+      );
+      bgPlane.position.z = -2;
+      bgGrp.add(bgPlane);
+      scene.add(bgGrp);
+
+      // Custom glass shader — true refraction via screen-space normal offset
+      const glassVert = `
+        varying vec3 vN;
+        varying vec3 vV;
+        varying vec4 vClip;
+        void main() {
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          vV = normalize(-mv.xyz);
+          vN = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * mv;
+          vClip = gl_Position;
+        }
+      `;
+      const glassFrag = `
+        uniform sampler2D tBg;
+        varying vec3 vN;
+        varying vec3 vV;
+        varying vec4 vClip;
+        void main() {
+          vec3 N = normalize(vN);
+          vec3 V = normalize(vV);
+          float cosA = clamp(dot(N, V), 0.0, 1.0);
+          float fr = pow(1.0 - cosA, 3.0);
+
+          // Screen UV + refraction offset driven by surface normal
+          vec2 uv = (vClip.xy / vClip.w) * 0.5 + 0.5;
+          uv.y = 1.0 - uv.y;
+          vec2 offset = N.xy * 0.2;
+          vec4 bg = texture2D(tBg, clamp(uv + offset, 0.001, 0.999));
+
+          // Glass: distorted background + white fresnel at edges
+          vec3 col = mix(bg.rgb * 0.85 + vec3(0.04, 0.06, 0.1), vec3(1.0), fr * 0.9);
+          float alpha = 0.15 + fr * 0.85;
+          gl_FragColor = vec4(col, alpha);
+        }
+      `;
+
+      const glassMat = new THREE.ShaderMaterial({
+        vertexShader: glassVert,
+        fragmentShader: glassFrag,
+        uniforms: { tBg: { value: fbo.texture } },
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+
+      const glassGrp = new THREE.Group();
+      scene.add(glassGrp);
+
       const SIZE = 0.88, DEPTH = 0.32, TRACKING = -0.05, LINE_Y = 0.44;
-      const cfg = { font: null, size: SIZE, depth: DEPTH, curveSegments: 12,
-        bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 5 };
+      const cfg = {
+        size: SIZE, depth: DEPTH, curveSegments: 12,
+        bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 5
+      };
 
       function buildLine(word, font) {
         const grp = new THREE.Group();
@@ -1003,18 +1037,18 @@
             const oGeo = new TextGeometry('o', { ...cfg, font });
             oGeo.computeBoundingBox();
             const oW = oGeo.boundingBox.max.x - oGeo.boundingBox.min.x;
-            const oMesh = new THREE.Mesh(oGeo, glassMat); oMesh.position.x = x; grp.add(oMesh);
+            const om = new THREE.Mesh(oGeo, glassMat); om.position.x = x; grp.add(om);
             const tGeo = new TextGeometry('~', { ...cfg, font, size: SIZE * 0.48, depth: DEPTH * 0.5 });
             tGeo.computeBoundingBox();
             const tW = tGeo.boundingBox.max.x - tGeo.boundingBox.min.x;
-            const tMesh = new THREE.Mesh(tGeo, glassMat);
-            tMesh.position.set(x + (oW - tW) / 2, SIZE * 0.63, 0); grp.add(tMesh);
+            const tm = new THREE.Mesh(tGeo, glassMat);
+            tm.position.set(x + (oW - tW) / 2, SIZE * 0.63, 0); grp.add(tm);
             x += oW + TRACKING;
           } else {
             const geo = new TextGeometry(ch, { ...cfg, font });
             geo.computeBoundingBox();
             const w = geo.boundingBox.max.x - geo.boundingBox.min.x;
-            const mesh = new THREE.Mesh(geo, glassMat); mesh.position.x = x; grp.add(mesh);
+            const m = new THREE.Mesh(geo, glassMat); m.position.x = x; grp.add(m);
             x += w + TRACKING;
           }
         }
@@ -1024,14 +1058,26 @@
 
       const loader = new FontLoader();
       loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', font => {
-        const grp = new THREE.Group();
-        const l0 = buildLine('Rui', font);    l0.position.y =  LINE_Y; grp.add(l0);
-        const l1 = buildLine('Simões', font); l1.position.y = -LINE_Y; grp.add(l1);
-        scene.add(grp);
+        const textGrp = new THREE.Group();
+        const l0 = buildLine('Rui', font);    l0.position.y =  LINE_Y; textGrp.add(l0);
+        const l1 = buildLine('Simões', font); l1.position.y = -LINE_Y; textGrp.add(l1);
+        glassGrp.add(textGrp);
+
         (function animate() {
           requestAnimationFrame(animate);
-          grp.rotation.y += 0.008;
+          textGrp.rotation.y += 0.008;
+
+          // Pass 1: render background to FBO (glass hidden)
+          glassGrp.visible = false;
+          renderer.setRenderTarget(fbo);
           renderer.render(scene, camera);
+          renderer.setRenderTarget(null);
+
+          // Pass 2: render glass only (background hidden → canvas transparent)
+          bgGrp.visible = false;
+          glassGrp.visible = true;
+          renderer.render(scene, camera);
+          bgGrp.visible = true;
         })();
       });
     }
