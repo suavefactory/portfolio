@@ -1069,6 +1069,7 @@
 
       row.addEventListener("mouseleave", () => {
         clearTimeout(hoverTimer);
+        clearInterval(cycleInterval);
         if (!lockedRow && activeRow === row) {
           row.classList.remove("active");
           activeRow = null;
@@ -1101,9 +1102,15 @@
     list.addEventListener("mouseleave", () => {
       if (lockedRow) return;
       clearInterval(cycleInterval);
+      playTimers.forEach(t => clearTimeout(t)); playTimers = [];
       if (activeRow) { activeRow.classList.remove("active"); activeRow = null; }
-      cells.forEach(c => { c.style.background = ""; });
       setTicker(DEFAULT_TICKER);
+      cells.forEach((c, i) => {
+        c.style.background = "";
+        cellVids[i].pause();
+        showCell(i, "ph");
+        cellSrc[i] = null;
+      });
     });
   </script>
 
