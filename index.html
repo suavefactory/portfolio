@@ -200,6 +200,8 @@
     /* ── Reset ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+    ::selection { background: #c8ff00; color: #000; }
+
     /* ── Cursor ── */
     * { cursor: none !important; }
 
@@ -246,6 +248,33 @@
       background-size: 200px 200px;
     }
 
+    /* ── Gradient hairline (top) ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      z-index: 9500;
+      pointer-events: none;
+      background: linear-gradient(90deg, #cfc6ae, #ff5a1f 25%, #b84dff 58%, #2317e6 100%);
+    }
+
+    /* ── Liquid glass pill ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2.5px 8px 2px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.28);
+      background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
     /* ── Base ── */
     html { height: 100%; }
 
@@ -273,9 +302,18 @@
     }
 
     .header-role {
-      text-align: center;
+      display: flex;
+      gap: 5px;
+      justify-content: center;
       font-size: 11.5px;
-      opacity: 0.5;
+    }
+
+    .role-pill { color: rgba(0,0,0,0.6); }
+
+    .role-pill:hover {
+      background: #c8ff00;
+      border-color: #000;
+      color: #000;
     }
 
     .header-contact {
@@ -285,9 +323,22 @@
     }
 
     .contact-label {
-      text-decoration: underline;
-      opacity: 0.5;
-      cursor: default;
+      display: inline-flex;
+      align-items: center;
+      padding: 3.5px 11px 3px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.28);
+      background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .header-contact:hover .contact-label {
+      background: #c8ff00;
+      border-color: #000;
     }
 
     .contact-dropdown {
@@ -297,16 +348,25 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 3px;
+      gap: 5px;
+      padding: 10px 13px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(16px) saturate(1.5);
+      -webkit-backdrop-filter: blur(16px) saturate(1.5);
+      border: 1px solid rgba(255,255,255,0.75);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 36px rgba(0,0,0,0.16);
       opacity: 0;
+      transform: translateY(-4px);
       pointer-events: none;
-      transition: opacity 0.15s ease;
+      transition: opacity 0.15s ease, transform 0.18s ease;
       white-space: nowrap;
       z-index: 1000;
     }
 
     .header-contact:hover .contact-dropdown {
       opacity: 1;
+      transform: none;
     }
 
     /* ── Image strip ── */
@@ -418,9 +478,9 @@
       height: 420px;
       min-width: 280px;
       min-height: 180px;
-      background: #1c1c1e;
-      border-radius: 10px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(255,255,255,0.08);
+      background: rgba(28,28,30,0.92);
+      border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 0.5px rgba(255,255,255,0.1);
       z-index: 8000;
       overflow: hidden;
       resize: both;
@@ -432,7 +492,9 @@
     .float-titlebar {
       flex-shrink: 0;
       height: 36px;
-      background: #2c2c2e;
+      background: rgba(58,58,62,0.55);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
       display: flex;
       align-items: center;
       padding: 0 12px;
@@ -517,6 +579,16 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .col-disc .pill { margin-right: 4px; }
+
+    .project-row.active .pill,
+    .project-row.locked .pill {
+      border-color: rgba(255,255,255,0.5);
+      background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.08));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+      color: #fff;
+    }
+
     .col-tag {
       opacity: 0.45;
       font-size: 10px;
@@ -525,16 +597,44 @@
 
     .project-row:hover .col-tag,
     .project-row.active .col-tag {
-      opacity: 0.7;
+      opacity: 1;
     }
 
     .col-tag a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.28);
+      background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+      font-size: 9px;
       color: inherit;
       text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
 
     .col-tag a:hover {
-      text-decoration: underline;
+      background: #c8ff00;
+      border-color: #000;
+      color: #000;
+    }
+
+    .project-row.active .col-tag a,
+    .project-row.locked .col-tag a {
+      border-color: rgba(255,255,255,0.5);
+      background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.08));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+      color: #fff;
+    }
+
+    .project-row.active .col-tag a:hover,
+    .project-row.locked .col-tag a:hover {
+      background: #c8ff00;
+      border-color: #c8ff00;
+      color: #000;
     }
 
     /* ── 3D Name Canvas ── */
@@ -563,6 +663,17 @@
       letter-spacing: 0.03em;
     }
 
+    #clock::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c8ff00;
+      border: 1px solid rgba(0,0,0,0.4);
+      margin-right: 6px;
+    }
+
     /* ── Mobile ── */
     @media (hover: none), (max-width: 700px) {
       * { cursor: auto !important; }
@@ -571,8 +682,9 @@
       body::after { display: none; }
       body { font-size: 13px; }
 
-      header { grid-template-columns: 1fr 1fr; }
+      header { grid-template-columns: 1fr auto; }
       .header-name { display: none; }
+      .header-role { justify-content: flex-start; flex-wrap: wrap; }
 
       .image-strip { grid-template-columns: repeat(3, 1fr); }
       .image-cell:nth-child(n+4) { display: none; }
@@ -615,7 +727,7 @@
   <!-- Header -->
   <header>
     <h1 class="header-name" style="visibility:hidden;font:inherit;margin:0;padding:0">Rui Simões</h1>
-    <p class="header-role" style="margin:0;padding:0">AI Filmmaker, Designer, Editor</p>
+    <p class="header-role" style="margin:0;padding:0"><span class="pill role-pill">AI Filmmaker</span><span class="pill role-pill">Designer</span><span class="pill role-pill">Editor</span></p>
     <div class="header-contact">
       <span class="contact-label">contact</span>
       <div class="contact-dropdown">
@@ -1134,12 +1246,13 @@
       const tagHtml = p.link
         ? `<a href="${p.link}" data-label="${p.client} — ${p.title}">${p.tag || "↗"}</a>`
         : (p.tag || "");
+      const discHtml = p.disciplines.split(",").map(d => `<span class="pill">${d.trim()}</span>`).join("");
 
       row.innerHTML = `
         <span class="col-num">${num}</span>
         <span class="col-client">${p.client}</span>
         <span class="col-title">${p.title}</span>
-        <span class="col-disc">${p.disciplines}</span>
+        <span class="col-disc">${discHtml}</span>
         <span class="col-tag">${tagHtml}</span>
         <span class="col-year">${p.year}</span>
       `;
