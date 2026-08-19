@@ -200,8 +200,6 @@
     /* ── Reset ── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    ::selection { background: #c8ff00; color: #000; }
-
     /* ── Cursor ── */
     * { cursor: none !important; }
 
@@ -248,33 +246,6 @@
       background-size: 200px 200px;
     }
 
-    /* ── Gradient hairline (top) ── */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      z-index: 9500;
-      pointer-events: none;
-      background: linear-gradient(90deg, #cfc6ae, #ff5a1f 25%, #b84dff 58%, #2317e6 100%);
-    }
-
-    /* ── Liquid glass pill ── */
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 2.5px 8px 2px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.28);
-      background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      white-space: nowrap;
-      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    }
-
     /* ── Base ── */
     html { height: 100%; }
 
@@ -302,18 +273,9 @@
     }
 
     .header-role {
-      display: flex;
-      gap: 5px;
-      justify-content: center;
+      text-align: center;
       font-size: 11.5px;
-    }
-
-    .role-pill { color: rgba(0,0,0,0.6); }
-
-    .role-pill:hover {
-      background: #c8ff00;
-      border-color: #000;
-      color: #000;
+      opacity: 0.5;
     }
 
     .header-contact {
@@ -323,22 +285,9 @@
     }
 
     .contact-label {
-      display: inline-flex;
-      align-items: center;
-      padding: 3.5px 11px 3px;
-      border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.28);
-      background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
-
-    .header-contact:hover .contact-label {
-      background: #c8ff00;
-      border-color: #000;
+      text-decoration: underline;
+      opacity: 0.5;
+      cursor: default;
     }
 
     .contact-dropdown {
@@ -348,25 +297,16 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 5px;
-      padding: 10px 13px;
-      border-radius: 13px;
-      background: rgba(255,255,255,0.5);
-      backdrop-filter: blur(16px) saturate(1.5);
-      -webkit-backdrop-filter: blur(16px) saturate(1.5);
-      border: 1px solid rgba(255,255,255,0.75);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 14px 36px rgba(0,0,0,0.16);
+      gap: 3px;
       opacity: 0;
-      transform: translateY(-4px);
       pointer-events: none;
-      transition: opacity 0.15s ease, transform 0.18s ease;
+      transition: opacity 0.15s ease;
       white-space: nowrap;
       z-index: 1000;
     }
 
     .header-contact:hover .contact-dropdown {
       opacity: 1;
-      transform: none;
     }
 
     /* ── Image strip ── */
@@ -478,9 +418,9 @@
       height: 420px;
       min-width: 280px;
       min-height: 180px;
-      background: rgba(28,28,30,0.92);
-      border-radius: 16px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 0.5px rgba(255,255,255,0.1);
+      background: #1c1c1e;
+      border-radius: 10px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(255,255,255,0.08);
       z-index: 8000;
       overflow: hidden;
       resize: both;
@@ -492,9 +432,7 @@
     .float-titlebar {
       flex-shrink: 0;
       height: 36px;
-      background: rgba(58,58,62,0.55);
-      backdrop-filter: blur(18px) saturate(1.4);
-      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      background: #2c2c2e;
       display: flex;
       align-items: center;
       padding: 0 12px;
@@ -579,16 +517,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    .col-disc .pill { margin-right: 4px; }
-
-    .project-row.active .pill,
-    .project-row.locked .pill {
-      border-color: rgba(255,255,255,0.5);
-      background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.08));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
-      color: #fff;
-    }
-
     .col-tag {
       opacity: 0.45;
       font-size: 10px;
@@ -597,44 +525,16 @@
 
     .project-row:hover .col-tag,
     .project-row.active .col-tag {
-      opacity: 1;
+      opacity: 0.7;
     }
 
     .col-tag a {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 1px solid rgba(0,0,0,0.28);
-      background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-      font-size: 9px;
       color: inherit;
       text-decoration: none;
-      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
 
     .col-tag a:hover {
-      background: #c8ff00;
-      border-color: #000;
-      color: #000;
-    }
-
-    .project-row.active .col-tag a,
-    .project-row.locked .col-tag a {
-      border-color: rgba(255,255,255,0.5);
-      background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.08));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
-      color: #fff;
-    }
-
-    .project-row.active .col-tag a:hover,
-    .project-row.locked .col-tag a:hover {
-      background: #c8ff00;
-      border-color: #c8ff00;
-      color: #000;
+      text-decoration: underline;
     }
 
     /* ── 3D Name Canvas ── */
@@ -663,17 +563,6 @@
       letter-spacing: 0.03em;
     }
 
-    #clock::before {
-      content: '';
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #c8ff00;
-      border: 1px solid rgba(0,0,0,0.4);
-      margin-right: 6px;
-    }
-
     /* ── Mobile ── */
     @media (hover: none), (max-width: 700px) {
       * { cursor: auto !important; }
@@ -682,9 +571,8 @@
       body::after { display: none; }
       body { font-size: 13px; }
 
-      header { grid-template-columns: 1fr auto; }
+      header { grid-template-columns: 1fr 1fr; }
       .header-name { display: none; }
-      .header-role { justify-content: flex-start; flex-wrap: wrap; }
 
       .image-strip { grid-template-columns: repeat(3, 1fr); }
       .image-cell:nth-child(n+4) { display: none; }
@@ -727,7 +615,7 @@
   <!-- Header -->
   <header>
     <h1 class="header-name" style="visibility:hidden;font:inherit;margin:0;padding:0">Rui Simões</h1>
-    <p class="header-role" style="margin:0;padding:0"><span class="pill role-pill">AI Filmmaker</span><span class="pill role-pill">Designer</span><span class="pill role-pill">Editor</span></p>
+    <p class="header-role" style="margin:0;padding:0">AI Filmmaker, Designer, Editor</p>
     <div class="header-contact">
       <span class="contact-label">contact</span>
       <div class="contact-dropdown">
@@ -800,8 +688,8 @@
         disciplines: "Founder, Creative Direction",
         tag: "↗", year: "2026",
         link: "https://sesh.pt",
-        description: "Built from scratch — a home for independent and non-commercial cinema across Portugal. Product design, frontend, and a fully automated data pipeline.",
-        bg: "#242424",
+        description: "Designed and developed end-to-end — a single place to find what's playing at independent and non-commercial cinemas across Portugal. UI/UX, frontend, and automated data pipeline built from scratch.",
+        cover: true,
         media: [
           "cineagenda-2026/sesh copy.png",
           "cineagenda-2026/sesh2 copy.png",
@@ -816,7 +704,7 @@
         title: "Short Film",
         disciplines: "Graphic Design, Visual Identity",
         tag: "", year: "2026",
-        description: "Visual identity and motion for A Noite em Que Aprendi a Voar — conceived the graphic language and animated every asset.",
+        description: "Motion designer on A Noite em Que Aprendi a Voar — created the visual identity and motion assets for the film.",
         media: [
           { src: "a noite em que aprendi a voar, visual identity/LUCIO.mp4", bg: "white" },
           { src: "a noite em que aprendi a voar, visual identity/PombosComSwag.mp4", cover: true, scale: 1.13 },
@@ -830,7 +718,7 @@
         title: "Short Film",
         disciplines: "Film Title, Motion Design",
         tag: "", year: "2026",
-        description: "Title sequence for A Noite em Que Aprendi a Voar — designed and animated from scratch.",
+        description: "Motion designer on A Noite em Que Aprendi a Voar — designed and animated the film title sequence.",
         cover: true,
         media: [
           { src: "a noite em que aprendi a voar , film title, motion desgin/filmtitle.mp4", cover: true, scale: 1.2 },
@@ -842,7 +730,7 @@
         disciplines: "Film Editing",
         tag: "↗", year: "2026",
         link: "https://www.youtube.com/watch?v=1P8BEFIPZhk&t=16s",
-        description: "Edit for A Noite em Que Aprendi a Voar — cut and shaped from raw footage into a short film.",
+        description: "Film editor on A Noite em Que Aprendi a Voar — responsible for cutting and assembling the edit, shaping pace, rhythm, and narrative structure.",
         cover: true,
         media: [
           "A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.36.38.png",
@@ -861,7 +749,7 @@
         disciplines: "AI Direction",
         tag: "↗", year: "2026",
         link: "https://vimeo.com/1182412337?share=copy&fl=sv&fe=ci",
-        description: "Spec ad for Água das Pedras — concept, direction, and full production using AI.",
+        description: "AI-directed spec ad — concept, visual direction, and full creative production using generative AI tools.",
         cover: true,
         media: [
           "agua-das-pedras-2026/1.png",
@@ -880,7 +768,7 @@
         disciplines: "AI Direction",
         tag: "↗", year: "2025",
         link: "https://vimeo.com/1196809123?share=copy&fl=sv&fe=ci",
-        description: "Short film — sole author, from concept through final cut. An experiment in generative cinema.",
+        description: "AI-directed short film — sole director and author, from concept through final cut, exploring generative cinema.",
         cover: true,
         media: [
           "bad-time-2025/1.png",
@@ -903,7 +791,7 @@
         disciplines: "AI Direction",
         tag: "↗", year: "2025",
         link: "https://vimeo.com/1136611447?fl=ip&fe=ec",
-        description: "Unofficial teaser for MID90s — directed and produced entirely with AI as a personal exercise.",
+        description: "AI-directed teaser for Jonah Hill's MID90s — directed and produced entirely with generative AI as a personal creative exercise.",
         cover: true,
         media: [
           "mid90s-2025/1.png",
@@ -921,7 +809,7 @@
         disciplines: "Film Editing",
         tag: "↗", year: "2025",
         link: "https://www.youtube.com/watch?v=TFQ6Ca0onAU",
-        description: "Edit for the pilot episode of Auto de Fé — cut and assembled from scratch.",
+        description: "Film editor on the pilot episode of Auto de Fé — responsible for cutting and assembling the edit, shaping pace, rhythm, and narrative structure.",
         cover: true,
         media: [
           "auto-de-fe-2025-montagem/1.jpg",
@@ -939,7 +827,7 @@
         title: "Pilot Episode",
         disciplines: "Graphic Design, Visual Identity",
         tag: "", year: "2025",
-        description: "On-screen graphics and title cards for the pilot episode of Auto de Fé.",
+        description: "Graphic designer on the pilot episode of Auto de Fé — created on-screen graphics, title cards, and visual assets.",
         cover: true,
         media: [
           "auto-de-fe-2025-graphic/1.jpg",
@@ -957,7 +845,7 @@
         disciplines: "Motion Design",
         tag: "", year: "2023",
         cover: true,
-        description: "Brand identity in motion for CyberCafé — conceived and animated from scratch.",
+        description: "Motion designer for CyberCafé — conceived and animated the brand identity in motion for CyberCafé skate shop.",
         media: [
           "cybercafe-2023/cybercafe.mp4",
         ]
@@ -968,7 +856,7 @@
         disciplines: "Motion Design",
         tag: "", year: "2023",
         cover: true,
-        description: "Motion content for Suavé Factory — directed and animated, translating the collective's identity into moving image.",
+        description: "Motion designer for Suavé Factory — directed and animated brand content, translating the creative collective's identity into motion.",
         media: [
           "suave-factory-2023-motion/suave-animation-v2.mp4",
           "suave-factory-2023-motion/img6131.mp4",
@@ -982,7 +870,7 @@
         title: "Creative Powerhouse",
         disciplines: "Graphic Design, Visual Identity",
         tag: "", year: "2022",
-        description: "Full brand system for Suavé Factory — mark, typography, and graphic language built from zero.",
+        description: "Visual identity and logo design for Suavé Factory — built the full brand system from scratch, including typography, mark, and graphic language.",
         cover: true,
         media: [
           "suave-factory-2022-logo/1.png",
@@ -1246,13 +1134,12 @@
       const tagHtml = p.link
         ? `<a href="${p.link}" data-label="${p.client} — ${p.title}">${p.tag || "↗"}</a>`
         : (p.tag || "");
-      const discHtml = p.disciplines.split(",").map(d => `<span class="pill">${d.trim()}</span>`).join("");
 
       row.innerHTML = `
         <span class="col-num">${num}</span>
         <span class="col-client">${p.client}</span>
         <span class="col-title">${p.title}</span>
-        <span class="col-disc">${discHtml}</span>
+        <span class="col-disc">${p.disciplines}</span>
         <span class="col-tag">${tagHtml}</span>
         <span class="col-year">${p.year}</span>
       `;
