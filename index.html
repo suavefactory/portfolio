@@ -961,7 +961,7 @@
     function setTicker(text) {
       if (text === currentTicker) return;
       currentTicker = text;
-      const repeated = (text + " — ").repeat(6);
+      const repeated = (text + " ").repeat(6);
       tickerText.textContent  = repeated;
       tickerClone.textContent = repeated;
       tickerTrack.style.animationName = "none";
