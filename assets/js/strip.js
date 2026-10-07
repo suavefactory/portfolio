@@ -13,6 +13,7 @@ window.Strip = (function () {
   var GAP    = 24;     // between slides, reference px
   var DRIFT  = 46;     // resting speed, reference px per second
   var PUSH   = 1.9;    // how hard one wheel notch shoves it
+  var TOUCH_PUSH = 7;  // and how hard a pixel of drag does, on touch
   var MAXV   = 2800;   // velocity ceiling, reference px per second
   var EASE   = 2.6;    // how fast velocity falls back to DRIFT
   var MIN    = 3;      // a project always gets at least this many slides
@@ -188,6 +189,29 @@ window.Strip = (function () {
     step(dt);
     track.style.transform = "translate3d(" + x.toFixed(2) + "px,0,0)";
   }
+
+  /* Touch has no wheel events, so a swipe drives the same velocity
+     instead: each bit of drag is thrown in exactly as a wheel notch
+     would be, and the usual decay takes it from there. Drags that start
+     on the bar are left alone — those scrub the ruler. */
+  var tx = 0, dragging = false;
+  window.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse") return;
+    if (e.target.closest && e.target.closest(".bar")) return;
+    dragging = true; tx = e.clientX;
+  }, { passive: true });
+
+  window.addEventListener("pointermove", function (e) {
+    if (!dragging || e.pointerType === "mouse") return;
+    var dx = e.clientX - tx;
+    tx = e.clientX;
+    // dragging against the travel speeds it up, same sign as the wheel
+    vel = Math.max(-MAXV, Math.min(MAXV, vel - dx * TOUCH_PUSH));
+  }, { passive: true });
+
+  function endDrag() { dragging = false; }
+  window.addEventListener("pointerup", endDrag, { passive: true });
+  window.addEventListener("pointercancel", endDrag, { passive: true });
 
   window.addEventListener("wheel", function (e) {
     var d = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;

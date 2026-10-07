@@ -299,6 +299,8 @@ body {
    ============================================================ */
 
 #strip {
+  /* the page cannot scroll, so a swipe here is ours to use */
+  touch-action: none;
   position: fixed;
   left: 0;
   top: 50%;
