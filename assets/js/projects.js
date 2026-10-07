@@ -69,7 +69,7 @@ window.PROJECTS = [
     title: "SHORT FILM", role: "FILM EDITING",
     year: "2026", date: "07/2026",
     client: "A Noite em Que Aprendi a Voar",
-    link: null,
+    link: "https://www.instagram.com/thenightilearnedtofly",
     desc: "Editor on A Noite em Que Aprendi a Voar — took the film from raw footage to final cut. Selection, structure, pacing, and rhythm, shaping how the story unfolds.",
     media: [
       { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.36.38.webp", type: "image" },
@@ -179,7 +179,7 @@ window.PROJECTS = [
     title: "PILOT EPISODE", role: "FILM EDITING",
     year: "2025", date: "XX/2025",
     client: "Auto de Fé",
-    link: "https://www.youtube.com/watch?v=TFQ6Ca0onAU",
+    link: "https://www.instagram.com/autodefe.tv",
     desc: "Editor on the pilot of Auto de Fé — cut the episode from first assembly to final delivery.",
     media: [
       { src: "media/auto-de-fe-2025-montagem/1.webp", type: "image",
