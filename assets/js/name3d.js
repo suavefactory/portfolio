@@ -130,7 +130,7 @@ if (canvas) {
   const ray = new THREE.Raycaster();
   const portrait = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
   const TOUCH    = window.matchMedia("(hover: none)").matches;
-  const HIT      = TOUCH ? 0.55 : 1;   // smaller target on a phone; the
+  const HIT      = TOUCH ? 0.40 : 1;   // smaller target on a phone; the
                                        // letters stay the size they are
 
   /* Map a viewport point into the canvas's own coordinates. In portrait

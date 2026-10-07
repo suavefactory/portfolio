@@ -18,6 +18,12 @@ window.Strip = (function () {
   var MIN    = 3;      // a project always gets at least this many slides
   var EAGER  = 3;      // slides fetched up front; the rest come in lazily
 
+  // On a phone the slides fill most of the screen. Making each one a
+  // link meant almost any stray tap navigated away, which read as the
+  // LINK misfiring. On touch the artwork is inert and the rotating
+  // LINK is the only way out.
+  var TOUCH = window.matchMedia("(hover: none)").matches;
+
   var strip = document.getElementById("strip");
   var track = document.getElementById("track");
 
@@ -112,9 +118,10 @@ window.Strip = (function () {
 
     for (var copy = 0; copy < 2; copy++) {
       seq.forEach(function (item, i) {
-        var a = document.createElement(p.link ? "a" : "div");
+        var tappable = p.link && !TOUCH;
+        var a = document.createElement(tappable ? "a" : "div");
         a.className = "slide";
-        if (p.link) {
+        if (tappable) {
           a.href = p.link;
           a.target = "_blank";
           a.rel = "noopener";
