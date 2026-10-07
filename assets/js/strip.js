@@ -194,11 +194,13 @@ window.Strip = (function () {
      instead: each bit of drag is thrown in exactly as a wheel notch
      would be, and the usual decay takes it from there. Drags that start
      on the bar are left alone — those scrub the ruler.
-     On a portrait phone #rot is turned a quarter turn clockwise, so the
-     strip runs down the screen: its own x axis is the screen's y, and a
-     vertical swipe is what moves it. */
-  var ROTATED = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
-  function along(e) { return ROTATED.matches ? e.clientY : e.clientX; }
+     #rot may be turned (see index.html), so the drag is read along the
+     strip's own axis: down the screen at a quarter turn, and backwards
+     when the page is upside down. */
+  function along(e) {
+    var t = window.TURN ? window.TURN() : 0;
+    return t === 90 ? e.clientY : t === 180 ? -e.clientX : e.clientX;
+  }
 
   var tx = 0, dragging = false;
   window.addEventListener("pointerdown", function (e) {

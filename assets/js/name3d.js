@@ -128,24 +128,24 @@ if (canvas) {
   }
 
   const ray = new THREE.Raycaster();
-  const portrait = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
   const TOUCH    = window.matchMedia("(hover: none)").matches;
   const HIT      = TOUCH ? 0.40 : 1;   // smaller target on a phone; the
                                        // letters stay the size they are
 
-  /* Map a viewport point into the canvas's own coordinates. In portrait
-     #rot is turned a quarter turn, and getBoundingClientRect then
-     reports the axis-aligned footprint of the ROTATED box — so reading
-     x/y straight off it lands nowhere near the letters. The rotation is
-     `rotate(90deg) translateY(-100%)`, which sends a local (lx,ly) to
-     viewport (H-ly, lx); inverted, that is lx = vy, ly = W - vx. */
+  /* Map a viewport point into the canvas's own coordinates. #rot may be
+     turned (see index.html), and getBoundingClientRect then reports the
+     axis-aligned footprint of the ROTATED box — so reading x/y straight
+     off it lands nowhere near the letters. A quarter turn
+     (`rotate(90deg) translateY(-100%)`) sends local (lx,ly) to viewport
+     (H-ly, lx), so lx = vy, ly = W - vx; a half turn sends it to
+     (W-lx, H-ly), which is its own inverse. */
   function local(cx, cy) {
     const r = canvas.getBoundingClientRect();
     if (!r.width || !r.height) return null;
-    if (portrait.matches) {
-      return { x: cy, y: canvas.getBoundingClientRect().width - cx,
-               w: canvas.clientWidth, h: canvas.clientHeight };
-    }
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const t = window.TURN ? window.TURN() : 0;
+    if (t === 90)  return { x: cy, y: r.width - cx, w, h };
+    if (t === 180) return { x: r.width - cx, y: r.height - cy, w, h };
     return { x: cx - r.left, y: cy - r.top, w: r.width, h: r.height };
   }
 
