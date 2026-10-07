@@ -78,7 +78,8 @@ window.PROJECTS = [
       { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.38.23.webp", type: "image" },
       { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.39.25.webp", type: "image" },
       { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.39.55.webp", type: "image" },
-      { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.40.49.webp", type: "image" },
+      { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.40.49.webp", type: "image",
+        crop: { x: 0.0792, y: 0 } },
       { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.41.12.webp", type: "image" }
     ]
   },
