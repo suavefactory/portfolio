@@ -1,0 +1,453 @@
+/* ============================================================
+   RUI SIMÕES — ASCII index
+   Geometry is 1:1 with the reference frame (1920x1080).
+   Every value below is a literal reference pixel; the whole bar
+   is uniformly scaled by --s so proportions hold at any width.
+
+   Measured from the reference:
+     bar            x 17 -> 1897   y 507 -> 569   (1881 x 63)
+     inner band     y 515 -> 561   (8px inset from both borders)
+     divider A      x 144          divider B   x 217
+     ruler ticks    x 368 -> 1788  every 17px   (84 ticks)
+     borders        dash 3px / gap 2px
+     ticks          dash 2px / gap 2px
+     name underline y 549   x 25 -> 134
+   ============================================================ */
+
+:root {
+  --blue:   #004795;  /* measured mean of the reference background */
+  --ink:    #fcfcfc;  /* measured mean of the reference line work   */
+  --s:      1;        /* viewport scale, set by main.js             */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* The whole page lives in here. On a portrait phone it is rotated a
+   quarter turn and given the swapped dimensions, so the layout is the
+   desktop one laid on its side rather than a separate mobile design.
+   A transformed ancestor also becomes the containing block for its
+   fixed children, so #stage, #strip, #grain and #name3d all follow it
+   around without any extra work. */
+#rot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+@media (orientation: portrait) and (max-width: 900px) {
+  #rot {
+    width: 100vh;
+    height: 100vw;
+    transform-origin: 0 0;
+    transform: rotate(90deg) translateY(-100%);
+  }
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--blue);
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* ── animated TV grain ───────────────────────────────────── */
+/* ── stacking ─────────────────────────────────────────────
+   grain 1  ·  stills 2  ·  name 3  ·  bar 4
+   The name floats OVER the stills — behind them it was hidden the
+   moment a project started playing, since the strip covers the same
+   band of the screen.
+   The grain sits over the name (both are background) but under the
+   stills, so it still never crawls across the images. */
+
+/* the rotating name, big enough to run off the edges */
+#name3d {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+
+#grain {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.55;
+}
+
+/* ── the bar ─────────────────────────────────────────────── */
+/* A 1920x1080 reference frame pinned to the top-left and scaled by
+   width only, so every child sits on a whole reference pixel. At a
+   1920px viewport the scale is exactly 1 and the render is pixel-exact.
+   translateY(-50%) runs before the scale, which keeps the frame
+   vertically centred at any aspect ratio. */
+#stage {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform: scale(var(--s)) translateY(-50%);
+  transform-origin: 0 0;
+  z-index: 4;
+  /* the frame is the full 1920x1080, so it would otherwise swallow
+     every click on the page — only the bar itself should catch them */
+  pointer-events: none;
+}
+
+.bar {
+  pointer-events: auto;
+  position: absolute;
+  left: 17px;
+  top: 507px;
+  width: 1881px;
+  height: 76px;
+  /* four dashed edges, 3px dash / 2px gap */
+  background-image:
+    repeating-linear-gradient(to right,  var(--ink) 0 3px, transparent 3px 5px),
+    repeating-linear-gradient(to right,  var(--ink) 0 3px, transparent 3px 5px),
+    repeating-linear-gradient(to bottom, var(--ink) 0 3px, transparent 3px 5px),
+    repeating-linear-gradient(to bottom, var(--ink) 0 3px, transparent 3px 5px);
+  background-size: 100% 1px, 100% 1px, 1px 100%, 1px 100%;
+  background-position: 0 0, 0 100%, 0 0, 100% 0;
+  background-repeat: no-repeat;
+}
+
+/* ── vertical dashed dividers (3/2) ──────────────────────── */
+.divider {
+  position: absolute;
+  top: 8px;
+  width: 1px;
+  height: 60px;
+  background-image: repeating-linear-gradient(to bottom, var(--ink) 0 3px, transparent 3px 5px);
+}
+.divider.b { left: 200px; }   /* reference x 217 */
+
+/* ── cell 1 · contact ───────────────────────────────────── */
+/* One cell across what were the name and emblem cells (0->200px, i.e.
+   bar x17 to divider B at x217). The address is 26 characters and
+   needs that width to stay legible. */
+.contact {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 200px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  /* both lines share a right edge, against the divider */
+  align-items: flex-end;
+  justify-content: center;
+  padding-right: 8px;
+  gap: 1px;
+}
+.contact a { color: var(--ink); text-decoration: none; display: block; }
+.contact a:hover { opacity: 0.72; }
+
+.contact .ig {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 16px;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+/* upside down, as drawn */
+.contact .mail {
+  font-size: 10px;
+  line-height: 12px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  transform: rotate(180deg);
+}
+
+/* ── cell 3 · meta (date / page / slug) ──────────────────── */
+.meta {
+  position: absolute;
+  left: 209px;                      /* reference x 226 */
+  top: 8px;
+  height: 60px;                     /* bottom line baseline -> y 562 */
+  display: flex;
+  flex-direction: column;
+  /* idle (FILMMAKER / LISBON, PT) is centred on the same two line
+     boxes as the contact cell; a hovered project spreads to the cell
+     edges instead — see .project below */
+  justify-content: center;
+  gap: 1px;
+  font-size: 11px;
+}
+.meta.project { justify-content: space-between; gap: 0; }
+.meta span { white-space: pre; }
+.meta span:first-child { line-height: 16px; }
+.meta span:last-child  { line-height: 12px; }
+
+/* ── cell 4 · status (project read-out + clock) ──────────── */
+.status {
+  position: absolute;
+  right: 7px;
+  top: 8px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: right;
+  font-size: 11px;
+  line-height: 12px;
+}
+.status a { color: inherit; text-decoration: none; }
+/* scoped to the lines: `pre` on the container would turn the HTML
+   indentation between these spans into real line breaks */
+.status .line { display: block; white-space: pre; }
+.status .pair { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+.status.project .pair { height: 100%; justify-content: space-between; gap: 0; }
+.status .pair .line:first-child { line-height: 16px; }
+
+/* ── the ruler · 84 ticks / 14 project groups ────────────── */
+#ruler {
+  position: absolute;
+  left: 343px;                      /* reference x 360 */
+  top: 8px;
+  width: 1429px;                    /* 84 intervals x 17px, out to x 1788 */
+  height: 60px;
+}
+
+/* 85 columns on a 17px pitch — the scale off the reference bar. The 14
+   projects cycle across them, so column 1 and column 15 are the same
+   project; only the column under the cursor lights, never its twin. */
+.tab {
+  position: absolute;
+  top: 0;
+  height: 60px;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;               /* so a scrub is not read as a pan */
+}
+
+/* a tick: 1px wide, dashed 2px on / 2px off */
+.tick {
+  position: absolute;
+  width: 1px;
+  background-image: repeating-linear-gradient(to bottom, var(--ink) 0 2px, transparent 2px 4px);
+}
+.tab .tick {
+  top: 0;
+  height: 59px;
+  opacity: 0.45;
+  transition: opacity 140ms linear;
+}
+/* hover/focus is the whole selection model — no class needed, so a
+   project's repeats can never light up with it. The column only goes
+   to full white; it never changes size. */
+.tab:hover .tick,
+.tab:focus-visible .tick,
+.tab.lock .tick,
+.tab.on .tick { opacity: 1; }
+
+.tab:focus-visible { outline: none; }
+
+#list { display: none; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .tick, .tab { transition: none; }
+  #grain { opacity: 0.3; }
+}
+
+
+/* ============================================================
+   SLIDE STRIP
+   The active project's media tracking right to left behind the bar.
+   Measured off the mockup: 550px tall on a 1920x1080 frame, centred
+   on the bar (y263-812), 24px of page blue between slides.
+   Every slide is the same height; the width follows whatever the
+   media's own aspect ratio is, so tops and bottoms line up and the
+   widths vary. Full colour, nothing laid over them.
+   ============================================================ */
+
+#strip {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  overflow: hidden;
+  z-index: 2;
+  transform: translateY(-50%);
+  margin-top: calc(-2px * var(--s));   /* strip centre y536 vs viewport 540 */
+  pointer-events: none;
+}
+#strip.swap { animation: stripIn 260ms ease-out; }
+@keyframes stripIn { from { opacity: 0.35; } to { opacity: 1; } }
+#strip.empty { opacity: 0; }
+
+#track {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  gap: calc(24px * var(--s));
+  will-change: transform;
+}
+/* The slide is the visible window; its ratio is the ratio of the media
+   MINUS any baked-in black bars. The media itself is centred inside and
+   oversized by exactly the crop, so the bars fall outside and are
+   clipped. With no crop the media sits at height 100% and nothing is
+   lost — the ordinary case. */
+.slide {
+  position: relative;
+  flex: 0 0 auto;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+  /* no backing colour: the PNGs are transparent, and anything behind
+     them darkens the page blue and reads as the image being dimmed */
+  background: transparent;
+  /* provisional until the media reports its real size on load */
+  aspect-ratio: 16 / 9;
+  pointer-events: auto;
+}
+a.slide { cursor: pointer; }
+.slide img,
+.slide video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: none;
+}
+
+
+/* ============================================================
+   PLAYER WINDOW
+   Chrome and motion follow virgilabloh.com/usmnt, read off its
+   stylesheet: #1d1d1d body at 10px radius, a #252525 title bar at
+   2px/6px, a 12px round close button, a 10px mono filename, and the
+   0.18s ease-out scale(.92)->1 pop, with its origin set to wherever
+   the cursor was when the column was clicked.
+   ============================================================ */
+
+.win {
+  position: fixed;
+  z-index: 1001;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  /* frosted: translucent panel over a real blur of whatever is behind */
+  background: rgba(28, 28, 30, 0.62);
+  backdrop-filter: blur(34px) saturate(170%);
+  -webkit-backdrop-filter: blur(34px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.42),
+              0 2px 8px rgba(0, 0, 0, 0.28);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #fff;
+}
+.win.on { display: flex; }
+
+.win {
+  opacity: 0;
+  transform: scale(0.90);
+  transition: opacity 260ms cubic-bezier(.22,1,.36,1),
+              transform 420ms cubic-bezier(.16,1,.3,1),
+              box-shadow 420ms cubic-bezier(.16,1,.3,1);
+}
+.win.pop { opacity: 1; transform: scale(1); }
+
+.win-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: grab;
+  user-select: none;
+}
+.win-bar:active { cursor: grabbing; }
+.win-bar .l,
+.win-bar .r { display: flex; align-items: center; gap: 3px; }
+.win-bar .l { flex-shrink: 1; min-width: 0; }
+
+.win-close {
+  width: 16px; height: 16px;
+  min-width: 16px; min-height: 16px;
+  padding: 0; border: 0;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.win-close:hover  { background: rgba(255, 255, 255, 0.28); }
+.win-close svg { width: 7px; height: 7px; display: block; }
+
+.win-file {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.62);
+  letter-spacing: 0;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.win-open {
+  padding: 5px 10px 4px;
+  border: 0;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.win-open:hover  { background: rgba(255, 255, 255, 0.18); border-color: rgba(255, 255, 255, 0.2); }
+.win-open:active { background: rgba(255, 255, 255, 0.24); }
+
+.win-body {
+  position: relative;
+  margin: 0 9px 9px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.win-body iframe,
+.win-body video,
+.win-body img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .win { transition: none; }
+}

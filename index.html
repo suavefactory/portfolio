@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rui Simões (@ruipepo) — AI Filmmaker, Designer &amp; Editor</title>
+<meta name="description" content="Selected work 2022–present. AI filmmaker, motion designer and film editor based in Portugal.">
+<meta name="theme-color" content="#004795">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Rui Simões (@ruipepo) — AI Filmmaker, Designer &amp; Editor">
+<meta property="og:description" content="Selected work 2022–present.">
+<meta property="og:url" content="https://ruisimoes.com">
+
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+<div id="rot">
+
+<!-- the rotating name, behind everything -->
+<canvas id="name3d" aria-hidden="true"></canvas>
+
+<canvas id="grain" aria-hidden="true"></canvas>
+
+<!-- the active project, 16:9, sliding right to left behind the bar -->
+<div id="strip" class="empty" aria-hidden="true"><div id="track"></div></div>
+
+<main id="stage">
+  <div class="bar">
+
+    <!-- cell 1 · contact. Spans what used to be the name and emblem
+         cells (bar x17 -> divider B at x217); the email needs the room. -->
+    <div class="contact">
+      <a class="ig" href="https://instagram.com/ruipepo" target="_blank" rel="noopener">@ruipepo</a>
+      <a class="mail" href="mailto:ruipedrosimoes14@gmail.com">ruipedrosimoes14@gmail.com</a>
+    </div>
+
+    <span class="divider b" aria-hidden="true"></span>
+
+    <!-- cell 3 · meta -->
+    <div class="meta">
+      <span id="metaTop">FILMMAKER</span>
+      <span id="metaBot">LISBON, PT</span>
+    </div>
+
+    <!-- the ruler · one group of 6 ticks per project -->
+    <nav id="ruler" aria-label="Selected work 2022 to present"></nav>
+
+    <!-- cell 4 · status -->
+    <div class="status">
+      <span class="pair">
+        <span class="line" id="sLine1">SELECTED WORK</span>
+        <span class="line" id="sLine2">2022—2026</span>
+      </span>
+    </div>
+
+  </div>
+</main>
+
+<!-- small screens -->
+<section id="list">
+  <h1>RUI SIMÕES</h1>
+  <div class="head">AI FILMMAKER, DESIGNER &amp; EDITOR</div>
+  <div class="rule"></div>
+  <div class="head">SELECTED WORK 2022—PRESENT</div>
+  <div class="rule"></div>
+  <ol id="listItems"></ol>
+  <div class="rule"></div>
+  <div class="head"><a href="https://instagram.com/ruipepo" target="_blank" rel="noopener">@ruipepo</a></div>
+  <div class="head"><a href="mailto:ruipedrosimoes14@gmail.com">ruipedrosimoes14@gmail.com</a></div>
+</section>
+
+</div><!-- /rot -->
+
+<script>
+// #rot is the real stage: in portrait it is rotated 90deg, so its width
+// is the viewport's height. Everything sizes off these, not innerWidth.
+window.VW = function () { return document.getElementById("rot").clientWidth; };
+window.VH = function () { return document.getElementById("rot").clientHeight; };
+</script>
+<script src="assets/js/projects.js"></script>
+<script src="assets/js/strip.js"></script>
+<script src="assets/js/grain.js"></script>
+<script src="assets/js/player.js"></script>
+<script src="assets/js/main.js"></script>
+<!-- classic scripts, not modules: ES modules are blocked on file://
+     pages, which is what broke the 3D LINK when opening index.html
+     directly. three.js and the font are vendored for the same reason. -->
+<script src="assets/vendor/three.min.js"></script>
+<script src="assets/vendor/FontLoader.js"></script>
+<script src="assets/vendor/TextGeometry.js"></script>
+<script src="assets/vendor/helvetiker_bold.js"></script>
+<script src="assets/js/name3d.js"></script>
+</body>
+</html>
