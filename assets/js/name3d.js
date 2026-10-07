@@ -143,7 +143,7 @@ if (canvas) {
     const r = canvas.getBoundingClientRect();
     if (!r.width || !r.height) return null;
     if (portrait.matches) {
-      return { x: cy, y: window.innerWidth - cx,
+      return { x: cy, y: canvas.getBoundingClientRect().width - cx,
                w: canvas.clientWidth, h: canvas.clientHeight };
     }
     return { x: cx - r.left, y: cy - r.top, w: r.width, h: r.height };
