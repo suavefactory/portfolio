@@ -23,7 +23,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 /* The whole page lives in here. On a portrait phone it is rotated a
-   quarter turn and given the swapped dimensions, so the layout is the
+   quarter turn (see data-turn below) and given the swapped dimensions, so the layout is the
    desktop one laid on its side rather than a separate mobile design.
    A transformed ancestor also becomes the containing block for its
    fixed children, so #stage, #strip, #grain and #name3d all follow it
@@ -41,20 +41,22 @@
   width: 100dvw;
   height: 100dvh;
 }
-@media (orientation: portrait) and (max-width: 900px) {
-  #rot {
-    width: 100vh;
-    height: 100vw;
-    width: 100dvh;
-    height: 100dvw;
-    transform-origin: 0 0;
-    transform: rotate(90deg) translateY(-100%);
-  }
+/* the turn itself is chosen in index.html, which knows which way up
+   the phone is; the width and height come from there too */
+#rot[data-turn="90"] {
+  transform-origin: 0 0;
+  transform: rotate(90deg) translateY(-100%);
+}
+#rot[data-turn="180"] {
+  transform-origin: 50% 50%;
+  transform: rotate(180deg);
 }
 
 html, body {
   height: 100%;
   overflow: hidden;
+  /* nothing to pan or zoom: every gesture belongs to the page */
+  touch-action: none;
   background: var(--blue);
 }
 

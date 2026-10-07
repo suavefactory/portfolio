@@ -165,31 +165,80 @@
 </div><!-- /rot -->
 
 <script>
-// #rot is the real stage: in portrait it is rotated 90deg, so its width
-// is the viewport's height. Everything sizes off these, not innerWidth.
+// #rot is the real stage. On a phone it is turned so that it stays fixed
+// to the phone itself, as if the screen were locked in portrait: held
+// upright the page is rotated a quarter turn, so the bar runs down the
+// screen and the visitor turns the phone on its side to read it. Turning
+// the phone over makes the browser rotate its own viewport, and #rot
+// cancels that out — the site never jumps to a different layout.
 //
-// Its size is set here in pixels rather than left to CSS units, because
-// iOS Safari's 100vh is the viewport WITHOUT its toolbars — the bar then
-// runs past what you can actually see and its far end is cut off.
-// visualViewport reports what is genuinely on screen.
+//   TURN 90   portrait: rotate(90deg), width and height swapped
+//   TURN 0    landscape, phone's right edge up: the browser has already
+//             turned the page the way the portrait rotation would
+//   TURN 180  landscape, phone's left edge up: flipped, so it still
+//             reads the same way round relative to the phone
+//
+// Everything sizes off #rot, not innerWidth. Its size is set here in
+// pixels rather than left to CSS units, because iOS Safari's 100vh is
+// the viewport WITHOUT its toolbars — the bar then runs past what you
+// can actually see and its far end is cut off. visualViewport reports
+// what is genuinely on screen.
 (function () {
-  var rot = document.getElementById("rot");
-  var mq  = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+  var rot    = document.getElementById("rot");
+  var narrow = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+  var PHONE  = window.matchMedia("(hover: none) and (pointer: coarse)").matches &&
+               Math.min(screen.width, screen.height) <= 600;
+  var turn = 0, lastW = 0, lastH = 0;
+
+  // which way up the phone is, in degrees counter-clockwise from upright
+  function angle() {
+    if (typeof window.orientation === "number") return window.orientation;   // iOS
+    var o = screen.orientation;
+    if (o && typeof o.angle === "number") return o.angle > 180 ? o.angle - 360 : o.angle;
+    return 90;
+  }
+
   function size() {
     var vv = window.visualViewport;
     var w = Math.round(vv ? vv.width  : window.innerWidth);
     var h = Math.round(vv ? vv.height : window.innerHeight);
-    rot.style.width  = (mq.matches ? h : w) + "px";
-    rot.style.height = (mq.matches ? w : h) + "px";
+    var t;
+    if (!PHONE)       t = narrow.matches ? 90 : 0;
+    else if (h >= w)  t = 90;
+    else              t = angle() === -90 ? 180 : 0;
+
+    var side = (t === 90);
+    var rw = side ? h : w, rh = side ? w : h;
+    rot.style.width  = rw + "px";
+    rot.style.height = rh + "px";
+    rot.setAttribute("data-turn", t);
+
+    // the other scripts size themselves on resize, but they may already
+    // have run against the old stage — tell them once it has settled
+    var changed = (t !== turn || rw !== lastW || rh !== lastH);
+    turn = t; lastW = rw; lastH = rh;
+    if (changed && size.ready) dispatchEvent(new Event("resize"));
   }
   size();
+  size.ready = true;
   addEventListener("resize", size);
-  addEventListener("orientationchange", function () { setTimeout(size, 120); });
+  // iOS reports the new viewport late, and not always on the first try
+  addEventListener("orientationchange", function () {
+    [60, 250, 600, 1000].forEach(function (d) { setTimeout(size, d); });
+  });
   if (window.visualViewport) {
     visualViewport.addEventListener("resize", size);
     visualViewport.addEventListener("scroll", size);
   }
+
+  // the page itself never scrolls or zooms; without this iOS still
+  // rubber-bands it on a swipe and takes the gesture away from the strip
+  document.addEventListener("touchmove", function (e) {
+    if (!(e.target.closest && e.target.closest(".win"))) e.preventDefault();
+  }, { passive: false });
+
   window.__sizeRot = size;
+  window.TURN = function () { return turn; };
 })();
 window.VW = function () { return document.getElementById("rot").clientWidth; };
 window.VH = function () { return document.getElementById("rot").clientHeight; };
