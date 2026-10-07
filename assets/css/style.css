@@ -270,6 +270,15 @@ body {
 
 .tab:focus-visible { outline: none; }
 
+/* On a phone the columns are only a few px wide. The hit area is grown
+   well above and below the bar — the tick is pushed back down by the
+   same amount, so nothing moves on screen, there is just more of it to
+   hit with a finger. */
+@media (hover: none) {
+  .tab { top: -26px; height: 112px; }
+  .tab .tick { top: 26px; }
+}
+
 #list { display: none; }
 
 

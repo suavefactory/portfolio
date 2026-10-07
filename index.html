@@ -167,6 +167,30 @@
 <script>
 // #rot is the real stage: in portrait it is rotated 90deg, so its width
 // is the viewport's height. Everything sizes off these, not innerWidth.
+//
+// Its size is set here in pixels rather than left to CSS units, because
+// iOS Safari's 100vh is the viewport WITHOUT its toolbars — the bar then
+// runs past what you can actually see and its far end is cut off.
+// visualViewport reports what is genuinely on screen.
+(function () {
+  var rot = document.getElementById("rot");
+  var mq  = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+  function size() {
+    var vv = window.visualViewport;
+    var w = Math.round(vv ? vv.width  : window.innerWidth);
+    var h = Math.round(vv ? vv.height : window.innerHeight);
+    rot.style.width  = (mq.matches ? h : w) + "px";
+    rot.style.height = (mq.matches ? w : h) + "px";
+  }
+  size();
+  addEventListener("resize", size);
+  addEventListener("orientationchange", function () { setTimeout(size, 120); });
+  if (window.visualViewport) {
+    visualViewport.addEventListener("resize", size);
+    visualViewport.addEventListener("scroll", size);
+  }
+  window.__sizeRot = size;
+})();
 window.VW = function () { return document.getElementById("rot").clientWidth; };
 window.VH = function () { return document.getElementById("rot").clientHeight; };
 </script>
