@@ -193,18 +193,24 @@ window.Strip = (function () {
   /* Touch has no wheel events, so a swipe drives the same velocity
      instead: each bit of drag is thrown in exactly as a wheel notch
      would be, and the usual decay takes it from there. Drags that start
-     on the bar are left alone — those scrub the ruler. */
+     on the bar are left alone — those scrub the ruler.
+     On a portrait phone #rot is turned a quarter turn clockwise, so the
+     strip runs down the screen: its own x axis is the screen's y, and a
+     vertical swipe is what moves it. */
+  var ROTATED = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+  function along(e) { return ROTATED.matches ? e.clientY : e.clientX; }
+
   var tx = 0, dragging = false;
   window.addEventListener("pointerdown", function (e) {
     if (e.pointerType === "mouse") return;
     if (e.target.closest && e.target.closest(".bar")) return;
-    dragging = true; tx = e.clientX;
+    dragging = true; tx = along(e);
   }, { passive: true });
 
   window.addEventListener("pointermove", function (e) {
     if (!dragging || e.pointerType === "mouse") return;
-    var dx = e.clientX - tx;
-    tx = e.clientX;
+    var dx = along(e) - tx;
+    tx = along(e);
     // dragging against the travel speeds it up, same sign as the wheel
     vel = Math.max(-MAXV, Math.min(MAXV, vel - dx * TOUCH_PUSH));
   }, { passive: true });
