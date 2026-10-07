@@ -69,7 +69,7 @@ window.PROJECTS = [
     title: "SHORT FILM", role: "FILM EDITING",
     year: "2026", date: "07/2026",
     client: "A Noite em Que Aprendi a Voar",
-    link: "https://www.youtube.com/watch?v=1P8BEFIPZhk&t=16s",
+    link: null,
     desc: "Editor on A Noite em Que Aprendi a Voar — took the film from raw footage to final cut. Selection, structure, pacing, and rhythm, shaping how the story unfolds.",
     media: [
       { src: "media/A Noite em Que Aprendi a Voar 2026 Montagem Short Film/Screenshot 2026-07-12 at 14.36.38.webp", type: "image" },
