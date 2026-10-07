@@ -129,8 +129,7 @@ if (canvas) {
 
   const ray = new THREE.Raycaster();
   const TOUCH    = window.matchMedia("(hover: none)").matches;
-  const HIT      = TOUCH ? 0.40 : 1;   // smaller target on a phone; the
-                                       // letters stay the size they are
+  const PAD      = 14;                 // px of slack around the word, on touch
 
   /* Map a viewport point into the canvas's own coordinates. #rot may be
      turned (see index.html), and getBoundingClientRect then reports the
@@ -153,20 +152,35 @@ if (canvas) {
     if (!hasLink()) return false;      // read live, not from the last frame
     const p = local(cx, cy);
     if (!p) return false;
-    ray.setFromCamera(new THREE.Vector2(
-      (p.x / p.w) * 2 - 1, -(p.y / p.h) * 2 + 1), camera);
+    const nx = (p.x / p.w) * 2 - 1, ny = -(p.y / p.h) * 2 + 1;
 
-    // raycast against a shrunken copy of the word, so the tap target is
-    // tighter than the artwork without changing how it looks
-    let saved;
-    if (HIT !== 1) {
-      saved = spin.scale.clone();
-      spin.scale.multiplyScalar(HIT);
-      spin.updateMatrixWorld(true);
+    /* With a mouse the letters themselves are the target. A finger
+       cannot hit those: the word spins, so half the time it is nearly
+       edge-on, and a tap that lands between two strokes misses. On touch
+       the target is the rectangle the word fills when it faces the
+       screen, wherever it has drifted to, whatever its spin. */
+    if (TOUCH) {
+      const ry = spin.rotation.y;
+      spin.rotation.y = 0;
+      float.updateMatrixWorld(true);
+      const b = new THREE.Box3().setFromObject(spin);
+      spin.rotation.y = ry;
+      float.updateMatrixWorld(true);
+
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      const v = new THREE.Vector3();
+      for (let i = 0; i < 8; i++) {
+        v.set(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z)
+         .project(camera);
+        x0 = Math.min(x0, v.x); x1 = Math.max(x1, v.x);
+        y0 = Math.min(y0, v.y); y1 = Math.max(y1, v.y);
+      }
+      const px = PAD * 2 / p.w, py = PAD * 2 / p.h;
+      return nx >= x0 - px && nx <= x1 + px && ny >= y0 - py && ny <= y1 + py;
     }
-    const hit = ray.intersectObject(spin, true).length > 0;
-    if (saved) { spin.scale.copy(saved); spin.updateMatrixWorld(true); }
-    return hit;
+
+    ray.setFromCamera(new THREE.Vector2(nx, ny), camera);
+    return ray.intersectObject(spin, true).length > 0;
   }
 
   function onBar(e) { return e.target.closest && e.target.closest(".bar"); }
