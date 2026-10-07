@@ -12,6 +12,10 @@ python3 -m http.server 8000
 # → http://localhost:8000
 ```
 
+Every stylesheet and script in `index.html` carries a `?v=` stamp. GitHub
+Pages lets browsers keep a file for 10 minutes, so after changing any of them
+bump the stamp, or visitors keep running the old copy.
+
 ## Layout
 
 Geometry is 1:1 with the reference frame, measured off it pixel by pixel:
