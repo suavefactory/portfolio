@@ -122,20 +122,53 @@ if (canvas) {
   /* The canvas does not take pointer events — that would swallow clicks
      across the whole screen — so hits are raycast against the letters
      and handled in the capture phase, before anything underneath. */
-  const ray = new THREE.Raycaster();
   function hasLink() {
     const c = window.CURRENT_PROJECT;
     return !!(c && c.link);
   }
-  function overWord(cx, cy) {
-    if (!hasLink()) return false;   // read live, not from the last frame
+
+  const ray = new THREE.Raycaster();
+  const portrait = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+  const TOUCH    = window.matchMedia("(hover: none)").matches;
+  const HIT      = TOUCH ? 0.55 : 1;   // smaller target on a phone; the
+                                       // letters stay the size they are
+
+  /* Map a viewport point into the canvas's own coordinates. In portrait
+     #rot is turned a quarter turn, and getBoundingClientRect then
+     reports the axis-aligned footprint of the ROTATED box — so reading
+     x/y straight off it lands nowhere near the letters. The rotation is
+     `rotate(90deg) translateY(-100%)`, which sends a local (lx,ly) to
+     viewport (H-ly, lx); inverted, that is lx = vy, ly = W - vx. */
+  function local(cx, cy) {
     const r = canvas.getBoundingClientRect();
-    if (!r.width || !r.height) return false;
-    ray.setFromCamera(new THREE.Vector2(
-      ((cx - r.left) / r.width) * 2 - 1,
-      -((cy - r.top) / r.height) * 2 + 1), camera);
-    return ray.intersectObject(spin, true).length > 0;
+    if (!r.width || !r.height) return null;
+    if (portrait.matches) {
+      return { x: cy, y: window.innerWidth - cx,
+               w: canvas.clientWidth, h: canvas.clientHeight };
+    }
+    return { x: cx - r.left, y: cy - r.top, w: r.width, h: r.height };
   }
+
+  function overWord(cx, cy) {
+    if (!hasLink()) return false;      // read live, not from the last frame
+    const p = local(cx, cy);
+    if (!p) return false;
+    ray.setFromCamera(new THREE.Vector2(
+      (p.x / p.w) * 2 - 1, -(p.y / p.h) * 2 + 1), camera);
+
+    // raycast against a shrunken copy of the word, so the tap target is
+    // tighter than the artwork without changing how it looks
+    let saved;
+    if (HIT !== 1) {
+      saved = spin.scale.clone();
+      spin.scale.multiplyScalar(HIT);
+      spin.updateMatrixWorld(true);
+    }
+    const hit = ray.intersectObject(spin, true).length > 0;
+    if (saved) { spin.scale.copy(saved); spin.updateMatrixWorld(true); }
+    return hit;
+  }
+
   function onBar(e) { return e.target.closest && e.target.closest(".bar"); }
 
   window.addEventListener("pointermove", (e) => {
